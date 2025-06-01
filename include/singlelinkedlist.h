@@ -67,7 +67,7 @@ extern "C" {
 
 /******************************************************************
 *
-* FUNCTION NAME: create_node       
+* FUNCTION NAME: create_node_sll       
 *
 * PURPOSE: Allocates the needed memory for a node of the singly linked list
 *
@@ -82,12 +82,12 @@ extern "C" {
 *
 *
 *****************************************************************/
-void create_node(void** node);
+void create_node_sll(void** node);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: give_node_value       
+* FUNCTION NAME: give_node_value_sll       
 *
 * PURPOSE: Allocates and gives a value to a node already allocated
 *
@@ -103,12 +103,12 @@ void create_node(void** node);
 *
 *
 *****************************************************************/
-void give_node_value(void* node, void *value1, uint64_t size_of_datatype);
+void give_node_value_sll(void* node, void *value1, uint64_t size_of_datatype);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_to_head       
+* FUNCTION NAME: add_node_to_head_sll       
 *
 * PURPOSE: Adds a node to the head of a linked list
 *
@@ -123,13 +123,13 @@ void give_node_value(void* node, void *value1, uint64_t size_of_datatype);
 *
 *
 *****************************************************************/
-void add_node_to_head(void** head, void* node);
+void add_node_to_head_sll(void** head, void* node);
 
 
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_to_tail       
+* FUNCTION NAME: add_node_to_tail_sll       
 *
 * PURPOSE: Adds a node to the tail of a linked list
 *
@@ -144,12 +144,12 @@ void add_node_to_head(void** head, void* node);
 *
 *
 *****************************************************************/
-void add_node_to_tail(void** head, void* node);                  // ** needed in case head in null
+void add_node_to_tail_sll(void** head, void* node);                  // ** needed in case head in null
 
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_in_index_n       
+* FUNCTION NAME: add_node_in_index_n_sll       
 *
 * PURPOSE: Adds a node to index n of a linked list
 *
@@ -165,12 +165,12 @@ void add_node_to_tail(void** head, void* node);                  // ** needed in
 *
 *
 *****************************************************************/
-void add_node_in_index_n(void** head, void* node, uint64_t position);
+void add_node_in_index_n_sll(void** head, void* node, uint64_t position);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_head_node       
+* FUNCTION NAME: remove_head_node_sll       
 *
 * PURPOSE: removes the head of a linked list
 *
@@ -185,11 +185,11 @@ void add_node_in_index_n(void** head, void* node, uint64_t position);
 *
 *
 *****************************************************************/
-void remove_head_node(void** head);
+void remove_head_node_sll(void** head);
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_tail_node       
+* FUNCTION NAME: remove_tail_node_sll       
 *
 * PURPOSE: removes the tail of a linked list
 *
@@ -204,11 +204,11 @@ void remove_head_node(void** head);
 *
 *
 *****************************************************************/
-void remove_tail_node(void** head);
+void remove_tail_node_sll(void** head);
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_node_in_index_n       
+* FUNCTION NAME: remove_node_in_index_n_sll       
 *
 * PURPOSE: removes node at index n of a linked list
 *
@@ -223,11 +223,11 @@ void remove_tail_node(void** head);
 *
 *
 *****************************************************************/
-void remove_node_in_index_n(void** head, uint64_t position);
+void remove_node_in_index_n_sll(void** head, uint64_t position);
 
 /******************************************************************
 *
-* FUNCTION NAME: next_node       
+* FUNCTION NAME: next_node_sll       
 *
 * PURPOSE: changes pointer to the next node of that pointer
 *
@@ -242,11 +242,11 @@ void remove_node_in_index_n(void** head, uint64_t position);
 *
 *
 *****************************************************************/
-void next_node(void** node);
+void next_node_sll(void** node);
 
 /******************************************************************
 *
-* FUNCTION NAME: get_next_node       
+* FUNCTION NAME: get_next_node_sll       
 *
 * PURPOSE: returns a pointer to the next node of a node
 *
@@ -261,11 +261,11 @@ void next_node(void** node);
 *
 *
 *****************************************************************/
-void* get_next_node(void* node);
+void* get_next_node_sll(void* node);
 
 /******************************************************************
 *
-* FUNCTION NAME: get_value       
+* FUNCTION NAME: get_value_sll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the given node
 *
@@ -280,11 +280,11 @@ void* get_next_node(void* node);
 *
 *
 *****************************************************************/
-void* get_value(void* node);
+void* get_value_sll(void* node);
 
 /******************************************************************
 *
-* FUNCTION NAME: get_value_in_index_n       
+* FUNCTION NAME: get_value_in_index_n_sll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the node in index n
 *
@@ -299,14 +299,14 @@ void* get_value(void* node);
 *
 *
 *****************************************************************/
-void* get_value_in_index_n(void* head, uint64_t n);
+void* get_value_in_index_n_sll(void* head, uint64_t n);
 
 // void print_list(void* head);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: free_linked_list       
+* FUNCTION NAME: free_linked_list_sll       
 *
 * PURPOSE: frees a linked list
 *
@@ -321,7 +321,7 @@ void* get_value_in_index_n(void* head, uint64_t n);
 *
 *
 *****************************************************************/
-void free_linked_list(void** head);
+void free_linked_list_sll(void** head);
 
 
 /*****************************************************/
