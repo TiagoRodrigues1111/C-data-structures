@@ -1,7 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -pedantic -std=c11
+CFLAGS = -Wall -Wextra -g -pedantic -std=c11 -Iinclude
 OBJ = template.o template.o
 TARGET = template_test
+
 
 # Default target
 all: $(TARGET)
