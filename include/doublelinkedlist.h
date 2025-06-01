@@ -67,7 +67,7 @@ extern "C" {
 
 /******************************************************************
 *
-* FUNCTION NAME: create_node       
+* FUNCTION NAME: create_node_dll       
 *
 * PURPOSE: Allocates the needed memory for a node of the doubly linked list
 *
@@ -82,12 +82,12 @@ extern "C" {
 *
 *
 *****************************************************************/
-void create_node(void** node);
+void create_node_dll(void** node);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: give_node_value       
+* FUNCTION NAME: give_node_value_dll       
 *
 * PURPOSE: Allocates and gives a value to a node already allocated
 *
@@ -103,12 +103,12 @@ void create_node(void** node);
 *
 *
 *****************************************************************/
-void give_node_value(void* node, void *value1, uint64_t size_of_datatype);
+void give_node_value_dll(void* node, void *value1, uint64_t size_of_datatype);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_to_head       
+* FUNCTION NAME: add_node_to_head_dll       
 *
 * PURPOSE: Adds a node to the head of a linked list
 *
@@ -123,13 +123,13 @@ void give_node_value(void* node, void *value1, uint64_t size_of_datatype);
 *
 *
 *****************************************************************/
-void add_node_to_head(void** linked_list_node, void* node);
+void add_node_to_head_dll(void** linked_list_node, void* node);
 
 
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_to_tail       
+* FUNCTION NAME: add_node_to_tail_dll       
 *
 * PURPOSE: Adds a node to the tail of a linked list
 *
@@ -144,12 +144,12 @@ void add_node_to_head(void** linked_list_node, void* node);
 *
 *
 *****************************************************************/
-void add_node_to_tail(void** linked_list_node, void* node);                  // ** needed in case head in null
+void add_node_to_tail_dll(void** linked_list_node, void* node);                  // ** needed in case head in null
 
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_in_index_n       
+* FUNCTION NAME: add_node_in_index_n_dll       
 *
 * PURPOSE: Adds a node to index n compared to given node of a linked list
 *
@@ -165,12 +165,12 @@ void add_node_to_tail(void** linked_list_node, void* node);                  // 
 *
 *
 *****************************************************************/
-void add_node_in_index_n(void** linked_list_node, void* node, int64_t position);
+void add_node_in_index_n_dll(void** linked_list_node, void* node, int64_t position);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_head_node       
+* FUNCTION NAME: remove_head_node_dll       
 *
 * PURPOSE: removes the head of a linked list
 *
@@ -185,11 +185,11 @@ void add_node_in_index_n(void** linked_list_node, void* node, int64_t position);
 *
 *
 *****************************************************************/
-void remove_head_node(void** linked_list_node);
+void remove_head_node_dll(void** linked_list_node);
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_tail_node       
+* FUNCTION NAME: remove_tail_node_dll       
 *
 * PURPOSE: removes the tail of a linked list
 *
@@ -204,11 +204,11 @@ void remove_head_node(void** linked_list_node);
 *
 *
 *****************************************************************/
-void remove_tail_node(void** linked_list_node);
+void remove_tail_node_dll(void** linked_list_node);
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_node_in_index_n       
+* FUNCTION NAME: remove_node_in_index_n_dll       
 *
 * PURPOSE: removes node at index n compared to given node of a linked list
 *
@@ -223,11 +223,11 @@ void remove_tail_node(void** linked_list_node);
 *
 *
 *****************************************************************/
-void remove_node_in_index_n(void** linked_list_node, int64_t position);
+void remove_node_in_index_n_dll(void** linked_list_node, int64_t position);
 
 /******************************************************************
 *
-* FUNCTION NAME: next_node       
+* FUNCTION NAME: next_node_dll       
 *
 * PURPOSE: changes pointer to the next node of that pointer
 *
@@ -242,11 +242,11 @@ void remove_node_in_index_n(void** linked_list_node, int64_t position);
 *
 *
 *****************************************************************/
-void next_node(void** node);
+void next_node_dll(void** node);
 
 /******************************************************************
 *
-* FUNCTION NAME: get_next_node       
+* FUNCTION NAME: get_next_node_dll       
 *
 * PURPOSE: returns a pointer to the next node of a node
 *
@@ -261,12 +261,12 @@ void next_node(void** node);
 *
 *
 *****************************************************************/
-void* get_next_node(void* node);
+void* get_next_node_dll(void* node);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: previous_node       
+* FUNCTION NAME: previous_node_dll       
 *
 * PURPOSE: changes pointer to the previous node of that pointer
 *
@@ -281,11 +281,11 @@ void* get_next_node(void* node);
 *
 *
 *****************************************************************/
-void previous_node(void** node);
+void previous_node_dll(void** node);
 
 /******************************************************************
 *
-* FUNCTION NAME: get_previous_node       
+* FUNCTION NAME: get_previous_node_dll       
 *
 * PURPOSE: returns a pointer to the previous node of a node
 *
@@ -300,12 +300,12 @@ void previous_node(void** node);
 *
 *
 *****************************************************************/
-void* get_previous_node(void* node);
+void* get_previous_node_dll(void* node);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: get_value       
+* FUNCTION NAME: get_value_dll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the given node
 *
@@ -320,11 +320,11 @@ void* get_previous_node(void* node);
 *
 *
 *****************************************************************/
-void* get_value(void* node);
+void* get_value_dll(void* node);
 
 /******************************************************************
 *
-* FUNCTION NAME: get_value_in_index_n       
+* FUNCTION NAME: get_value_in_index_n_dll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the node in index n compared to given node
 *
@@ -339,14 +339,14 @@ void* get_value(void* node);
 *
 *
 *****************************************************************/
-void* get_value_in_index_n(void* linked_list_node, int64_t n);
+void* get_value_in_index_n_dll(void* linked_list_node, int64_t n);
 
 // void print_list(void* head);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: free_linked_list       
+* FUNCTION NAME: free_linked_list_dll       
 *
 * PURPOSE: frees a linked list
 *
@@ -361,7 +361,7 @@ void* get_value_in_index_n(void* linked_list_node, int64_t n);
 *
 *
 *****************************************************************/
-void free_linked_list(void** linked_list_node);
+void free_linked_list_dll(void** linked_list_node);
 
 
 /*****************************************************/

@@ -117,7 +117,7 @@ struct node
 
 /******************************************************************
 *
-* FUNCTION NAME: create_node       
+* FUNCTION NAME: create_node_dll       
 *
 * PURPOSE: Allocates the needed memory for a node of the doubly linked list
 *
@@ -132,7 +132,7 @@ struct node
 *
 *
 *****************************************************************/
-void create_node(void** node)
+void create_node_dll(void** node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -159,7 +159,7 @@ void create_node(void** node)
 
 /******************************************************************
 *
-* FUNCTION NAME: give_node_value       
+* FUNCTION NAME: give_node_value_dll       
 *
 * PURPOSE: Allocates and gives a value to a node already allocated
 *
@@ -175,7 +175,7 @@ void create_node(void** node)
 *
 *
 *****************************************************************/
-void give_node_value(void* node, void *value1, uint64_t size_of_datatype)
+void give_node_value_dll(void* node, void *value1, uint64_t size_of_datatype)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -209,7 +209,7 @@ void give_node_value(void* node, void *value1, uint64_t size_of_datatype)
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_to_head       
+* FUNCTION NAME: add_node_to_head_dll       
 *
 * PURPOSE: Adds a node to the head of a linked list
 *
@@ -224,7 +224,7 @@ void give_node_value(void* node, void *value1, uint64_t size_of_datatype)
 *
 *
 *****************************************************************/
-void add_node_to_head(void** linked_list_node, void* node)
+void add_node_to_head_dll(void** linked_list_node, void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -245,7 +245,7 @@ void add_node_to_head(void** linked_list_node, void* node)
         {
                 return;
         }
-        else if(NULL == get_previous_node((*linked_list_node)))               // given linked_list_node is head
+        else if(NULL == get_previous_node_dll((*linked_list_node)))               // given linked_list_node is head
         {
                 ((struct node*)node)->next= ((struct node*)(*linked_list_node));
                 ((struct node*)node)->previous= NULL;
@@ -255,8 +255,8 @@ void add_node_to_head(void** linked_list_node, void* node)
         }
 
         struct node* aux_ptr = (*(struct node**)(linked_list_node));
-        while(NULL != get_previous_node((void *)aux_ptr))
-                previous_node((void**) &aux_ptr);
+        while(NULL != get_previous_node_dll((void *)aux_ptr))
+                previous_node_dll((void**) &aux_ptr);
 
 
         ((struct node*)node)->next= aux_ptr;
@@ -268,7 +268,7 @@ void add_node_to_head(void** linked_list_node, void* node)
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_to_tail       
+* FUNCTION NAME: add_node_to_tail_dll       
 *
 * PURPOSE: Adds a node to the tail of a linked list
 *
@@ -283,7 +283,7 @@ void add_node_to_head(void** linked_list_node, void* node)
 *
 *
 *****************************************************************/
-void add_node_to_tail(void** linked_list_node, void* node)
+void add_node_to_tail_dll(void** linked_list_node, void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -306,8 +306,8 @@ void add_node_to_tail(void** linked_list_node, void* node)
         }
 
         struct node* aux_ptr = (*(struct node**)(linked_list_node));
-        while(NULL != get_next_node((void *)aux_ptr))
-                next_node((void**) &aux_ptr);
+        while(NULL != get_next_node_dll((void *)aux_ptr))
+                next_node_dll((void**) &aux_ptr);
 
 
         aux_ptr->next = node;
@@ -319,7 +319,7 @@ void add_node_to_tail(void** linked_list_node, void* node)
 
 /******************************************************************
 *
-* FUNCTION NAME: add_node_in_index_n       
+* FUNCTION NAME: add_node_in_index_n_dll       
 *
 * PURPOSE: Adds a node to index n compared to given node of a linked list
 *
@@ -335,7 +335,7 @@ void add_node_to_tail(void** linked_list_node, void* node)
 *
 *
 *****************************************************************/
-void add_node_in_index_n(void** linked_list_node, void* node, int64_t position)
+void add_node_in_index_n_dll(void** linked_list_node, void* node, int64_t position)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -356,27 +356,27 @@ void add_node_in_index_n(void** linked_list_node, void* node, int64_t position)
         {
                 return;
         }
-        else if((NULL == get_previous_node((*linked_list_node))) && (0 >= position))               // given node is head
+        else if((NULL == get_previous_node_dll((*linked_list_node))) && (0 >= position))               // given node is head
         {
-                add_node_to_head(linked_list_node, node);
+                add_node_to_head_dll(linked_list_node, node);
                 return ;
         }
 
         struct node* aux_ptr = (*(struct node**)(linked_list_node));
         if(position > 0)
         {
-                while(NULL != get_next_node((void *)aux_ptr) && position>0)                     //has to be 1
+                while(NULL != get_next_node_dll((void *)aux_ptr) && position>0)                     //has to be 1
                 {
-                        next_node((void**) &aux_ptr);
+                        next_node_dll((void**) &aux_ptr);
                         position--;
                 }
 
         }
         else if(position < 0)
         {
-                while(NULL != get_previous_node((void *)aux_ptr) && position<0)                     //has to be 1
+                while(NULL != get_previous_node_dll((void *)aux_ptr) && position<0)                     //has to be 1
                 {
-                        previous_node((void**) &aux_ptr);
+                        previous_node_dll((void**) &aux_ptr);
                         position++;
                 }
         }
@@ -399,7 +399,7 @@ void add_node_in_index_n(void** linked_list_node, void* node, int64_t position)
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_head_node       
+* FUNCTION NAME: remove_head_node_dll       
 *
 * PURPOSE: removes the head of a linked list
 *
@@ -414,7 +414,7 @@ void add_node_in_index_n(void** linked_list_node, void* node, int64_t position)
 *
 *
 *****************************************************************/
-void remove_head_node(void** linked_list_node)
+void remove_head_node_dll(void** linked_list_node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -430,7 +430,7 @@ void remove_head_node(void** linked_list_node)
         {
                 return;
         }
-        if((NULL == get_previous_node((*linked_list_node))) && (NULL == get_next_node((*linked_list_node))))
+        if((NULL == get_previous_node_dll((*linked_list_node))) && (NULL == get_next_node_dll((*linked_list_node))))
         {
                 (*(struct node**)(linked_list_node))->next = NULL;
                 (*(struct node**)(linked_list_node))->previous = NULL;
@@ -442,20 +442,20 @@ void remove_head_node(void** linked_list_node)
         }
 
         struct node* aux_ptr = (*(struct node**)(linked_list_node));
-        if(NULL == get_previous_node((*linked_list_node)))  
+        if(NULL == get_previous_node_dll((*linked_list_node)))  
         {
-                next_node(linked_list_node);
+                next_node_dll(linked_list_node);
                 (*(struct node**)(linked_list_node))->previous = NULL;
                 free(aux_ptr->data);
                 free(aux_ptr);
                 return;
         }
 
-        while(NULL != get_previous_node(aux_ptr))
-                previous_node((void**) &aux_ptr);    
+        while(NULL != get_previous_node_dll(aux_ptr))
+                previous_node_dll((void**) &aux_ptr);    
 
 
-        if(NULL != get_next_node(aux_ptr))
+        if(NULL != get_next_node_dll(aux_ptr))
                 aux_ptr->next->previous = NULL;
         
 
@@ -469,7 +469,7 @@ void remove_head_node(void** linked_list_node)
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_tail_node       
+* FUNCTION NAME: remove_tail_node_dll       
 *
 * PURPOSE: removes the tail of a linked list
 *
@@ -484,7 +484,7 @@ void remove_head_node(void** linked_list_node)
 *
 *
 *****************************************************************/
-void remove_tail_node(void** linked_list_node)
+void remove_tail_node_dll(void** linked_list_node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -501,7 +501,7 @@ void remove_tail_node(void** linked_list_node)
                 return;
         }
 
-        if((NULL == get_previous_node((*linked_list_node))) && (NULL == get_next_node((*linked_list_node))))
+        if((NULL == get_previous_node_dll((*linked_list_node))) && (NULL == get_next_node_dll((*linked_list_node))))
         {
                 (*(struct node**)(linked_list_node))->next = NULL;
                 (*(struct node**)(linked_list_node))->previous = NULL;
@@ -518,7 +518,7 @@ void remove_tail_node(void** linked_list_node)
         {
                 (*(struct node**)(linked_list_node))->previous->next = NULL;
                 
-                previous_node(linked_list_node);
+                previous_node_dll(linked_list_node);
                 free(aux_ptr->data);
                 free(aux_ptr);
                 // (*linked_list_node) = NULL;
@@ -526,9 +526,9 @@ void remove_tail_node(void** linked_list_node)
         }
 
         aux_ptr = (*(struct node**)(linked_list_node));
-        while(NULL != get_next_node((void *)aux_ptr))
+        while(NULL != get_next_node_dll((void *)aux_ptr))
         {
-                next_node((void**) &aux_ptr);
+                next_node_dll((void**) &aux_ptr);
         }
 
 
@@ -545,7 +545,7 @@ void remove_tail_node(void** linked_list_node)
 
 /******************************************************************
 *
-* FUNCTION NAME: remove_node_in_index_n       
+* FUNCTION NAME: remove_node_in_index_n_dll       
 *
 * PURPOSE: removes node at index n compared to given node of a linked list
 *
@@ -560,7 +560,7 @@ void remove_tail_node(void** linked_list_node)
 *
 *
 *****************************************************************/
-void remove_node_in_index_n(void** linked_list_node, int64_t position)
+void remove_node_in_index_n_dll(void** linked_list_node, int64_t position)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -577,9 +577,9 @@ void remove_node_in_index_n(void** linked_list_node, int64_t position)
                 return;
         }
 
-        else if((NULL == get_previous_node((*linked_list_node))) && (0 >= position))               // given node is head
+        else if((NULL == get_previous_node_dll((*linked_list_node))) && (0 >= position))               // given node is head
         {
-                remove_head_node(linked_list_node);
+                remove_head_node_dll(linked_list_node);
                 return ;
         }
         
@@ -587,18 +587,18 @@ void remove_node_in_index_n(void** linked_list_node, int64_t position)
         struct node* aux_ptr = (*(struct node**)(linked_list_node));
         if(position > 0)
         {
-                while(NULL != get_next_node((void *)aux_ptr) && position>0)                     //has to be 1
+                while(NULL != get_next_node_dll((void *)aux_ptr) && position>0)                     //has to be 1
                 {
-                        next_node((void**) &aux_ptr);
+                        next_node_dll((void**) &aux_ptr);
                         position--;
                 }
 
         }
         else if(position < 0)
         {
-                while(NULL != get_previous_node((void *)aux_ptr) && position<0)                     //has to be 1
+                while(NULL != get_previous_node_dll((void *)aux_ptr) && position<0)                     //has to be 1
                 {
-                        previous_node((void**) &aux_ptr);
+                        previous_node_dll((void**) &aux_ptr);
                         position++;
                 }
         }
@@ -611,7 +611,7 @@ void remove_node_in_index_n(void** linked_list_node, int64_t position)
                 
                 if(aux_ptr == (*(struct node**)(linked_list_node)))
                 {
-                        next_node(linked_list_node);
+                        next_node_dll(linked_list_node);
                 }
                 
                 aux_ptr->next = NULL;
@@ -629,7 +629,7 @@ void remove_node_in_index_n(void** linked_list_node, int64_t position)
 
 /******************************************************************
 *
-* FUNCTION NAME: next_node       
+* FUNCTION NAME: next_node_dll       
 *
 * PURPOSE: changes pointer to the next node of that pointer
 *
@@ -644,7 +644,7 @@ void remove_node_in_index_n(void** linked_list_node, int64_t position)
 *
 *
 *****************************************************************/
-void next_node(void** node)
+void next_node_dll(void** node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -659,14 +659,14 @@ void next_node(void** node)
         {
                 return;
         }
-        (*(struct node**)(node)) = get_next_node((*(struct node**)(node)));
+        (*(struct node**)(node)) = get_next_node_dll((*(struct node**)(node)));
         return;
 }
 
 
 /******************************************************************
 *
-* FUNCTION NAME: get_next_node       
+* FUNCTION NAME: get_next_node_dll       
 *
 * PURPOSE: returns a pointer to the next node of a node
 *
@@ -681,7 +681,7 @@ void next_node(void** node)
 *
 *
 *****************************************************************/
-void* get_next_node(void* node)
+void* get_next_node_dll(void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -697,7 +697,7 @@ void* get_next_node(void* node)
 
 /******************************************************************
 *
-* FUNCTION NAME: previous_node       
+* FUNCTION NAME: previous_node_dll       
 *
 * PURPOSE: changes pointer to the previous node of that pointer
 *
@@ -712,7 +712,7 @@ void* get_next_node(void* node)
 *
 *
 *****************************************************************/
-void previous_node(void** node)
+void previous_node_dll(void** node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -727,14 +727,14 @@ void previous_node(void** node)
         {
                 return;
         }
-        (*(struct node**)(node)) = get_previous_node((*(struct node**)(node)));
+        (*(struct node**)(node)) = get_previous_node_dll((*(struct node**)(node)));
         return;
 }
 
 
 /******************************************************************
 *
-* FUNCTION NAME: get_previous_node       
+* FUNCTION NAME: get_previous_node_dll       
 *
 * PURPOSE: returns a pointer to the previous node of a node
 *
@@ -749,7 +749,7 @@ void previous_node(void** node)
 *
 *
 *****************************************************************/
-void* get_previous_node(void* node)
+void* get_previous_node_dll(void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -765,7 +765,7 @@ void* get_previous_node(void* node)
 
 /******************************************************************
 *
-* FUNCTION NAME: get_value       
+* FUNCTION NAME: get_value_dll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the given node
 *
@@ -780,7 +780,7 @@ void* get_previous_node(void* node)
 *
 *
 *****************************************************************/
-void* get_value(void* node)
+void* get_value_dll(void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -796,7 +796,7 @@ void* get_value(void* node)
 
 /******************************************************************
 *
-* FUNCTION NAME: get_value_in_index_n       
+* FUNCTION NAME: get_value_in_index_n_dll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the node in index n
 *
@@ -811,7 +811,7 @@ void* get_value(void* node)
 *
 *
 *****************************************************************/
-void* get_value_in_index_n(void* linked_list_node, int64_t n)
+void* get_value_in_index_n_dll(void* linked_list_node, int64_t n)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -825,15 +825,15 @@ void* get_value_in_index_n(void* linked_list_node, int64_t n)
 
         struct node* aux_ptr = ((struct node*)(linked_list_node));
 
-        while(NULL != get_previous_node((void *)aux_ptr) && 0 > n)                  
+        while(NULL != get_previous_node_dll((void *)aux_ptr) && 0 > n)                  
         {
-                previous_node((void**) &aux_ptr);
+                previous_node_dll((void**) &aux_ptr);
                 n++;
         }       
 
-        while(NULL != get_next_node((void *)aux_ptr) && 0 < n)                  
+        while(NULL != get_next_node_dll((void *)aux_ptr) && 0 < n)                  
         {
-                next_node((void**) &aux_ptr);
+                next_node_dll((void**) &aux_ptr);
                 n--;
         }
 
@@ -848,7 +848,7 @@ void* get_value_in_index_n(void* linked_list_node, int64_t n)
 
 /******************************************************************
 *
-* FUNCTION NAME: free_linked_list       
+* FUNCTION NAME: free_linked_list_dll       
 *
 * PURPOSE: frees a linked list
 *
@@ -863,7 +863,7 @@ void* get_value_in_index_n(void* linked_list_node, int64_t n)
 *
 *
 *****************************************************************/
-void  free_linked_list(void** linked_list_node)
+void  free_linked_list_dll(void** linked_list_node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -875,14 +875,14 @@ void  free_linked_list(void** linked_list_node)
                 return;
         }  
 
-        while(NULL != get_previous_node((*linked_list_node)))
+        while(NULL != get_previous_node_dll((*linked_list_node)))
         {
-                (*linked_list_node) = get_previous_node((*linked_list_node));
+                (*linked_list_node) = get_previous_node_dll((*linked_list_node));
         }
         while(NULL != (*linked_list_node))
         {
                 struct node* aux_ptr = (*linked_list_node);
-                (*linked_list_node) = get_next_node((*linked_list_node));
+                (*linked_list_node) = get_next_node_dll((*linked_list_node));
                 free(aux_ptr->data);
                 free(aux_ptr);
         }
