@@ -65,6 +65,27 @@ extern "C" {
 
 /******************************************************************
 *
+* FUNCTION NAME: create_list_csll       
+*
+* PURPOSE: Allocates the needed memory for a sentinel node of the circular singly linked list
+*
+* ARGUMENTS:
+*
+* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the sentinel node to allocate
+*
+*
+* RETURNS: void
+*
+*
+*
+*****************************************************************/
+void create_list_csll(void** list_sentinel_node);
+
+
+
+/******************************************************************
+*
 * FUNCTION NAME: create_node_csll       
 *
 * PURPOSE: Allocates the needed memory for a node of the singly linked list
@@ -121,7 +142,7 @@ void give_node_value_csll(void* node, void *value1, uint64_t size_of_datatype);
 *
 *
 *****************************************************************/
-void add_node_to_head_csll(void** head, void* node);
+void add_node_to_head_csll(void** list_sentinel_node, void* node);
 
 
 
@@ -142,7 +163,7 @@ void add_node_to_head_csll(void** head, void* node);
 *
 *
 *****************************************************************/
-void add_node_to_tail_csll(void** head, void* node);                  // ** needed in case head in null
+void add_node_to_tail_csll(void** list_sentinel_node, void* node);                  // ** needed in case head in null
 
 
 /******************************************************************
@@ -163,7 +184,7 @@ void add_node_to_tail_csll(void** head, void* node);                  // ** need
 *
 *
 *****************************************************************/
-void add_node_in_index_n_csll(void** head, void* node, uint64_t position);
+void add_node_in_index_n_csll(void** list_sentinel_node, void* node, uint64_t position);
 
 
 /******************************************************************
@@ -183,7 +204,7 @@ void add_node_in_index_n_csll(void** head, void* node, uint64_t position);
 *
 *
 *****************************************************************/
-void remove_head_node_csll(void** head);
+void remove_head_node_csll(void** list_sentinel_node);
 
 /******************************************************************
 *
@@ -202,7 +223,7 @@ void remove_head_node_csll(void** head);
 *
 *
 *****************************************************************/
-void remove_tail_node_csll(void** head);
+void remove_tail_node_csll(void** list_sentinel_node);
 
 /******************************************************************
 *
@@ -221,7 +242,7 @@ void remove_tail_node_csll(void** head);
 *
 *
 *****************************************************************/
-void remove_node_in_index_n_csll(void** head, uint64_t position);
+void remove_node_in_index_n_csll(void** list_sentinel_node, uint64_t position);
 
 /******************************************************************
 *
@@ -263,6 +284,26 @@ void* get_next_node_csll(void* node);
 
 /******************************************************************
 *
+* FUNCTION NAME: get_head_node       
+*
+* PURPOSE: returns a pointer to the head node of a list
+*
+* ARGUMENTS:
+*
+* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* node	                void*	        I	pointer to the memory position of the node
+*
+*
+* RETURNS: void* (memory position of the next node to the given node )
+*
+*
+*
+*****************************************************************/
+void* get_head_node(void *list_sentinel_node);
+
+
+/******************************************************************
+*
 * FUNCTION NAME: get_value_csll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the given node
@@ -279,6 +320,7 @@ void* get_next_node_csll(void* node);
 *
 *****************************************************************/
 void* get_value_csll(void* node);
+
 
 /******************************************************************
 *
@@ -297,7 +339,7 @@ void* get_value_csll(void* node);
 *
 *
 *****************************************************************/
-void* get_value_in_index_n_csll(void* head, uint64_t n);
+void* get_value_in_index_n_csll(void* list_sentinel_node, uint64_t n);
 
 
 // get_head_value;
@@ -325,7 +367,7 @@ void* get_value_in_index_n_csll(void* head, uint64_t n);
 *
 *
 *****************************************************************/
-void free_linked_list_csll(void** head);
+void free_linked_list_csll(void** list_sentinel_node);
 
 
 /*****************************************************/

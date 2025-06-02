@@ -99,6 +99,15 @@ struct node
 
 
 
+struct sentinel_node
+{
+        struct node* tail;                                              // TODO: create sentinel nodes, this is way too much allocation
+        struct node* head;
+};
+
+
+
+
 
 
 /*****************************************************/
@@ -113,6 +122,43 @@ struct node
 
 /* 7 function declarations */
 /*****************************************************/
+
+/******************************************************************
+*
+* FUNCTION NAME: create_list_csll       
+*
+* PURPOSE: Allocates the needed memory for a sentinel node of the circular singly linked list
+*
+* ARGUMENTS:
+*
+* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the sentinel node to allocate
+*
+*
+* RETURNS: void
+*
+*
+*
+*****************************************************************/
+void create_list_csll(void** list_sentinel_node)
+{
+        /* LOCAL VARIABLES:
+        *  Variable        Type    Description
+        *  --------        ----    -----------
+        *  None
+        */
+        (*list_sentinel_node) = malloc(1*sizeof(struct sentinel_node));
+        if(NULL == (*list_sentinel_node))
+        {
+                fprintf(stderr, "Memory allocation failed\n");
+                return ;
+        }
+        (*(struct sentinel_node **)(list_sentinel_node))->head = NULL;
+        
+        (*(struct sentinel_node **)(list_sentinel_node))->tail = NULL;
+        
+        return ;
+}
 
 
 /******************************************************************
@@ -206,7 +252,7 @@ void give_node_value_csll(void* node, void *value1, uint64_t size_of_datatype)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 * node                  void*	        I	pointer to the memory position of the node to add to the list
 *
 * RETURNS: void
@@ -214,17 +260,20 @@ void give_node_value_csll(void* node, void *value1, uint64_t size_of_datatype)
 *
 *
 *****************************************************************/
-void add_node_to_head_csll(void** head, void* node)
+void add_node_to_head_csll(void** list_sentinel_node, void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
         *  --------        ----    -----------
         *  None
         */
-        if(NULL == (*head))
+        if(NULL == (*list_sentinel_node))
         {
-                (*head) = node;
-                ((struct node*)node)->tail = node;
+                create_list_csll(list_sentinel_node);
+
+                (*(struct sentinel_node **)(list_sentinel_node))->head = node;
+                (*(struct sentinel_node **)(list_sentinel_node))->tail = node;
+
                 return;
         }
         if(NULL == node)
@@ -232,24 +281,14 @@ void add_node_to_head_csll(void** head, void* node)
                 return;
         }
 
-        ((struct node*)node)->next= ((struct node*)(*head));
-
+        ((struct node*)node)->next= (*(struct sentinel_node **)(list_sentinel_node))->head;
+        (*(struct sentinel_node **)(list_sentinel_node))->head = node;
         
-        if(NULL != ((struct node*)(*head))->tail)
+        if(NULL == (*(struct sentinel_node **)(list_sentinel_node))->tail)
         {
-                ((struct node*)node)->tail = ((struct node*)(*head))->tail;
-                ((struct node*)(*head))->tail = NULL;
+                (*(struct sentinel_node **)(list_sentinel_node))->tail = node;
                 
         }
-        else                            // first insertion
-        {
-
-                ((struct node*)node)->tail = ((struct node*)(*head));
-        }
-
-        ((struct node*)node)->tail->next = ((struct node*)node);
-
-        (*head) = node;
 
 }
 
@@ -262,7 +301,7 @@ void add_node_to_head_csll(void** head, void* node)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 * node                  void*	        I	pointer to the memory position of the node to add to the list
 *
 * RETURNS: void
@@ -270,32 +309,36 @@ void add_node_to_head_csll(void** head, void* node)
 *
 *
 *****************************************************************/
-void add_node_to_tail_csll(void** head, void* node)
+void add_node_to_tail_csll(void** list_sentinel_node, void* node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  None      
         */
-        if(NULL == (*head))
+        if(NULL == (*list_sentinel_node))
         {
-                (*head) = node;
-                ((struct node*)node)->tail = node;
+                create_list_csll(list_sentinel_node);
+
+                (*(struct sentinel_node **)(list_sentinel_node))->head = node;
+                (*(struct sentinel_node **)(list_sentinel_node))->tail = node;
+
                 return;
         }
         if(NULL == node)
         {
                 return;
         }
+
         
-        if (NULL != ((struct node*)(*head))->tail)
+        if (NULL != (*(struct sentinel_node **)(list_sentinel_node))->tail)
         {
-                 ((struct node*)(*head))->tail->next = node;
+                 (*(struct sentinel_node **)(list_sentinel_node))->tail->next = node;
         }
         
 
-        ((struct node*)(*head))->tail = node;
-        ((struct node*)node)->next = (*head);
+        (*(struct sentinel_node **)(list_sentinel_node))->tail = node;
+        ((struct node*)node)->next = (*(struct sentinel_node **)(list_sentinel_node))->head;
 
         return;
 
@@ -310,7 +353,7 @@ void add_node_to_tail_csll(void** head, void* node)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 * node                  void*	        I	pointer to the memory position of the node to add to the list
 * position              uint64_t        I       position to add node to the linked list
 *
@@ -319,39 +362,45 @@ void add_node_to_tail_csll(void** head, void* node)
 *
 *
 *****************************************************************/
-void add_node_in_index_n_csll(void** head, void* node, uint64_t position)
+void add_node_in_index_n_csll(void** list_sentinel_node, void* node, uint64_t position)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary node to walk through the list         
-        */        
-        if(NULL == (*head))
+        */      
+         if(NULL == (*list_sentinel_node))
         {
-                (*head) = node;
-                ((struct node*)node)->tail = node;
+                create_list_csll(list_sentinel_node);
+
+                (*(struct sentinel_node **)(list_sentinel_node))->head = node;
+                (*(struct sentinel_node **)(list_sentinel_node))->tail = node;
+
                 return;
         }
         if(NULL == node)
         {
                 return;
-        }
+        }      
         if(0 == position)
         {
-                add_node_to_head_csll(head, node);
+                add_node_to_head_csll(list_sentinel_node, node);
                 return ;
         }
 
-        struct node* aux_ptr = (*(struct node**)(head));
-        while((*head) != get_next_node_csll((void *)aux_ptr) && position>1)                     //has to be 1
+        struct node* aux_ptr = (*(struct node**)((*(struct sentinel_node **)(list_sentinel_node))->head));
+        struct node* aux_head = (*(struct node**)((*(struct sentinel_node **)(list_sentinel_node))->head));
+
+
+        while(aux_head != get_next_node_csll((void *)aux_ptr) && position>1)                     //has to be 1
         {
                 next_node_csll((void**) &aux_ptr);
                 position--;
         }
 
-        if((*head) == get_next_node_csll((void *)aux_ptr))
+        if(aux_head == get_next_node_csll((void *)aux_ptr))
         {
-                add_node_to_tail_csll(head,node);
+                add_node_to_tail_csll(list_sentinel_node,node);
         }
         else
         {
@@ -371,7 +420,7 @@ void add_node_in_index_n_csll(void** head, void* node, uint64_t position)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 *
 *
 * RETURNS: void
@@ -379,29 +428,25 @@ void add_node_in_index_n_csll(void** head, void* node, uint64_t position)
 *
 *
 *****************************************************************/
-void remove_head_node_csll(void** head)
+void remove_head_node_csll(void** list_sentinel_node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node to free         
         */        
-        if(NULL == (*head))
+        if(NULL == (*list_sentinel_node))
         {
                 return;
         }
 
-        struct node* aux_ptr = (*(struct node**)(head));
+        struct node* aux_ptr = (*(struct node**)((*(struct sentinel_node **)(list_sentinel_node))->head));
 
-        //if(NULL == ((struct node*)(*head))->next)
-        //{
 
-        //}
 
-        ((struct node*)(*head))->next->tail = ((struct node*)(*head))->tail;
-        ((struct node*)(*head))->tail->next = ((struct node*)(*head))->next;
+        ((*(struct sentinel_node **)(list_sentinel_node))->head) = ((*(struct sentinel_node **)(list_sentinel_node))->head)->next;
+        ((*(struct sentinel_node **)(list_sentinel_node))->tail)->next = ((*(struct sentinel_node **)(list_sentinel_node))->head); // TODO: problems with next being node?
 
-        next_node_csll(head);
 
         free(aux_ptr->data);
         free(aux_ptr);
@@ -419,7 +464,7 @@ void remove_head_node_csll(void** head)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 *
 *
 * RETURNS: void
@@ -427,34 +472,41 @@ void remove_head_node_csll(void** head)
 *
 *
 *****************************************************************/
-void remove_tail_node_csll(void** head)
+void remove_tail_node_csll(void** list_sentinel_node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node to free and for walking through the list         
         */
-        if(NULL == (*head))
+        if(NULL == (*list_sentinel_node))
         {
                 return;
         }
-        if(NULL == (*(struct node**)(head))->next)
+        if(NULL == ((*(struct sentinel_node **)(list_sentinel_node))->head)->next)
         {
-                free((*(struct node**)(head))->data);
-                free((*head));
-                (*head) = NULL;
+
+                free(((*(struct sentinel_node **)(list_sentinel_node))->head)->data);
+                free(((*(struct sentinel_node **)(list_sentinel_node))->head));
+
+                ((*(struct sentinel_node **)(list_sentinel_node))->head) = NULL;
+                ((*(struct sentinel_node **)(list_sentinel_node))->tail) = NULL;
                 return;
         }
 
-        struct node* aux_ptr = (*(struct node**)(head));
-        while(((struct node*)(*head))->tail != get_next_node_csll((void *)aux_ptr))
+        struct node* aux_ptr = ((*(struct sentinel_node **)(list_sentinel_node))->head);
+
+        while(((*(struct sentinel_node **)(list_sentinel_node))->tail) != get_next_node_csll((void *)aux_ptr))
         {
                 
                 next_node_csll((void**) &aux_ptr);
 
 
         }
-        ((struct node*)(*head))->tail = aux_ptr;
+        
+
+        (*(struct sentinel_node **)(list_sentinel_node))->tail = aux_ptr;
+
 
         aux_ptr = aux_ptr->next;
         //free(get_value(get_next_node_csll((void *)aux_ptr)));
@@ -462,9 +514,8 @@ void remove_tail_node_csll(void** head)
         //free(get_next_node_csll((void *)aux_ptr));
         free(aux_ptr);
 
-        ((struct node*)(*head))->tail->next = ((struct node*)(*head));
-
-        
+        (*(struct sentinel_node **)(list_sentinel_node))->tail->next = ((*(struct sentinel_node **)(list_sentinel_node))->head);
+    
 
         return;
 
@@ -481,7 +532,7 @@ void remove_tail_node_csll(void** head)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 * position              uint64_t        I       position to remove node in the linked list
 *
 * RETURNS: void
@@ -489,36 +540,38 @@ void remove_tail_node_csll(void** head)
 *
 *
 *****************************************************************/
-void remove_node_in_index_n_csll(void** head, uint64_t position)
+void remove_node_in_index_n_csll(void** list_sentinel_node, uint64_t position)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node to free and for walking through the list         
         */
-        if(NULL == (*head))
+        if(NULL == (*list_sentinel_node))
         {
                 return;
         }
         if(0 == position)
         {
-                remove_head_node_csll(head);
+                remove_head_node_csll(list_sentinel_node);
                 return ;
         }
 
-        struct node* aux_ptr = (*(struct node**)(head));
-        while(((struct node*)(*head)) != get_next_node_csll((void *)aux_ptr) && position>1)                     //has to be 1
+        struct node* aux_ptr = ((*(struct sentinel_node **)(list_sentinel_node))->head);
+
+
+        while(((*(struct sentinel_node **)(list_sentinel_node))->head) != get_next_node_csll((void *)aux_ptr) && position>1)                     //has to be 1
         {
                 next_node_csll((void**) &aux_ptr);
                 position--;
         }
 
-        if(((struct node*)(*head)) == get_next_node_csll((void *)aux_ptr))
+        if(((*(struct sentinel_node **)(list_sentinel_node))->head) == get_next_node_csll((void *)aux_ptr))
                 return ;
 
-        if(((struct node*)(*head))->tail != get_next_node_csll((void *)aux_ptr))
+        if(((*(struct sentinel_node **)(list_sentinel_node))->tail) != get_next_node_csll((void *)aux_ptr))
         {
-                remove_tail_node_csll(head);
+                remove_tail_node_csll(list_sentinel_node);
         }
 
         if(1 == position)
@@ -627,6 +680,39 @@ void* get_value_csll(void* node)
 
 /******************************************************************
 *
+* FUNCTION NAME: get_head_node       
+*
+* PURPOSE: returns a pointer to the head node of a list
+*
+* ARGUMENTS:
+*
+* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* node	                void*	        I	pointer to the memory position of the node
+*
+*
+* RETURNS: void* (memory position of the next node to the given node )
+*
+*
+*
+*****************************************************************/
+void* get_head_node(void *list_sentinel_node)
+{
+        /* LOCAL VARIABLES:
+        *  Variable        Type    Description
+        *  --------        ----    -----------
+        *  None
+        */
+        if(NULL == list_sentinel_node)
+                return NULL;
+
+        return ((void *)(((struct sentinel_node *)(list_sentinel_node))->head));           
+
+
+}
+
+
+/******************************************************************
+*
 * FUNCTION NAME: get_value_in_index_n_csll       
 *
 * PURPOSE: Returns the memory position of the value that is currently in the node in index n
@@ -634,7 +720,7 @@ void* get_value_csll(void* node)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void*	        I	pointer to the memory position of the head of the list
+* list_sentinel_node    void*	        I	pointer to the memory position of the head of the list
 * position              uint64_t        I       position of the node to return value
 *
 * RETURNS: void* (pointer to the memory position of the value in the node at index n)
@@ -642,19 +728,19 @@ void* get_value_csll(void* node)
 *
 *
 *****************************************************************/
-void* get_value_in_index_n_csll(void* head, uint64_t n)
+void* get_value_in_index_n_csll(void* list_sentinel_node, uint64_t n)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node for walking through the list         
         */
-        if(NULL == (head))
+        if(NULL == (list_sentinel_node))
         {
                 return NULL;
         }
 
-        struct node* aux_ptr = ((struct node*)(head));
+        struct node* aux_ptr = (((struct sentinel_node *)(list_sentinel_node))->head);
         
 
         while(NULL != get_next_node_csll((void *)aux_ptr) && n>0)                  
@@ -681,7 +767,7 @@ void* get_value_in_index_n_csll(void* head, uint64_t n)
 * ARGUMENTS:
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* head	                void**	        I/O	pointer to the memory position of the head of the list
+* list_sentinel_node    void**	        I/O	pointer to the memory position of the head of the list
 *
 *
 * RETURNS: void
@@ -689,22 +775,26 @@ void* get_value_in_index_n_csll(void* head, uint64_t n)
 *
 *
 *****************************************************************/
-void  free_linked_list_csll(void** head)
+void  free_linked_list_csll(void** list_sentinel_node)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to a node to free         
         */  
-        ((struct node*)(*head))->tail->next = NULL;
-        while(NULL != (*head))
+        ((*(struct sentinel_node **)(list_sentinel_node))->tail)->next = NULL;
+        while(NULL !=  ((*(struct sentinel_node **)(list_sentinel_node))->head))
         {
-                struct node* aux_ptr = (*head);
-                (*head) = get_next_node_csll((*head));
+                struct node* aux_ptr = ((*(struct sentinel_node **)(list_sentinel_node))->head);
+                ((*(struct sentinel_node **)(list_sentinel_node))->head) = get_next_node_csll(((*(struct sentinel_node **)(list_sentinel_node))->head));
                 free(aux_ptr->data);
                 free(aux_ptr);
         }
-        head = NULL;
+        free((*(struct sentinel_node **)(list_sentinel_node)));
+        
+        (*(list_sentinel_node)) = NULL;
+        (list_sentinel_node) = NULL;
+        
         return ;
 }
 
