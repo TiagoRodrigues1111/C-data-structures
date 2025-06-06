@@ -326,7 +326,7 @@ void set_erase(void* id_of_set, void* element_to_erase)
         {
             if (0 == ((struct set*)(id_of_set))->compare_func(element->data, element_to_erase)) 
             {
-                if (NULL == prev) 
+                if (NULL != prev) 
                         prev->next = element->next;
                 else 
                         ((struct set*)(id_of_set))->set_data_buckets[idx] = element->next;
