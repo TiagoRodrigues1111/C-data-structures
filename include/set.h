@@ -84,7 +84,7 @@ extern "C" {
 *
 *
 *****************************************************************/
-void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2));
+void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val));
 
 /******************************************************************
 *

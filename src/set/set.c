@@ -138,6 +138,7 @@ struct set
         // uint64_t load_factor;                        // could give the user the ability to choose his load factor                                       
         struct bucket **set_data_buckets;
         int8_t (*compare_func)(void* val1, void* val2);
+        uint64_t (*hash_function)(void* val);
 };
 
 
@@ -147,7 +148,7 @@ struct set
 /* 6 function prototypes */
 /*****************************************************/
 
-uint64_t hash_function(void* data);
+// uint64_t hash_function(void* data);
 
 void resize_set(void* id_of_set);
 
@@ -180,7 +181,7 @@ void resize_set(void* id_of_set);
 *
 *
 *****************************************************************/
-void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2))
+void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val))
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -211,6 +212,7 @@ void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_t
         ((struct set*)(*id_of_set))->datatype_size = size_of_datatype;
         ((struct set*)(*id_of_set))->k_aux = 1;
         ((struct set*)(*id_of_set))->compare_func = compare_func;
+        ((struct set*)(*id_of_set))->hash_function = hash_function;
 
         // Allocate space in the priority_queue for the array of values
         ((struct set*)(*id_of_set))->set_data_buckets = (struct bucket**) malloc(((struct set*)(*id_of_set))->set_size_allocated*sizeof(struct bucket*));     
@@ -259,7 +261,7 @@ void set_insert(void* id_of_set, void* data_to_insert)
         if (set_contains(id_of_set, data_to_insert)) 
                 return ; 
 
-        uint64_t idx = hash_function(data_to_insert) % ((struct set*)(id_of_set))->set_size_allocated;
+        uint64_t idx = ((struct set*)(id_of_set))->hash_function(data_to_insert) % ((struct set*)(id_of_set))->set_size_allocated;
         
         struct bucket *new_entry = NULL;
 
@@ -317,7 +319,7 @@ void set_erase(void* id_of_set, void* element_to_erase)
         *  None
         */
 
-        uint64_t idx = hash_function(element_to_erase) % ((struct set*)(id_of_set))->set_size_allocated;
+        uint64_t idx = ((struct set*)(id_of_set))->hash_function(element_to_erase) % ((struct set*)(id_of_set))->set_size_allocated;
 
         struct bucket *element = ((struct set*)(id_of_set))->set_data_buckets[idx];
         struct bucket *prev = NULL;
@@ -370,7 +372,7 @@ uint8_t set_contains(void* id_of_set, void* element_to_check)
         *  None
         */
 
-        uint64_t idx = hash_function(element_to_check) % ((struct set*)(id_of_set))->set_size_allocated;
+        uint64_t idx = ((struct set*)(id_of_set))->hash_function(element_to_check) % ((struct set*)(id_of_set))->set_size_allocated;
         struct bucket *bucket_aux = (((struct set*)(id_of_set))->set_data_buckets[idx]);
         
         while (NULL != bucket_aux) {
@@ -521,18 +523,19 @@ void free_set(void* id_of_set)
 *
 *
 *****************************************************************/
-uint64_t hash_function(void* data) 
-{
-        /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
-        */
-        uint64_t hash = 0;
+
+// uint64_t hash_function(void* data) 
+// {
+//         /* LOCAL VARIABLES:
+//         *  Variable        Type    Description
+//         *  --------        ----    -----------
+//         *  None
+//         */
+//         uint64_t hash = 0;
 
 
-        return hash;
-}
+//         return hash;
+// }
 
 
 
@@ -562,6 +565,8 @@ void resize_set(void* id_of_set)
         */
         if ((float)((struct set*)(id_of_set))->set_size/((struct set*)(id_of_set))->set_size_allocated < LOAD_FACTOR) 
                 return ;
+
+
 
         struct bucket **set_bucket_aux = NULL;
         
@@ -612,7 +617,7 @@ void resize_set(void* id_of_set)
                 {
                     struct bucket *next = element->next;
                     
-                    size_t idx = hash_function(element->data) % new_size;
+                    size_t idx = ((struct set*)(id_of_set))->hash_function(element->data) % new_size;
 
                     element->next = set_bucket_aux[idx];
                     set_bucket_aux[idx] = element;

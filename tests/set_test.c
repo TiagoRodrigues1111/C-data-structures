@@ -20,12 +20,20 @@ int8_t compare_uint16_t_func(void* val1, void* val2)
                 return 1;
 }
 
+// not really a good hash function, using uint16_t as the hash, means the uint64_t max size of buckets will not be used
+uint64_t hash_function(void* val)                       
+{
+        uint16_t val1_int = *((uint16_t*)val);
+        return val1_int;
+}
+
+
 
 void single_set_simple_test()
 {
         void *set = NULL;
 
-        create_set(&set, sizeof(uint16_t),20, compare_uint16_t_func);
+        create_set(&set, sizeof(uint16_t),20, compare_uint16_t_func,hash_function);
 
         printf("%u\n",check_set_is_empty(set));
         printf("%u\n",check_set_size(set));
