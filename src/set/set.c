@@ -175,6 +175,7 @@ void resize_set(void* id_of_set);
 * size_of_datatype      uint64_t        I       byte size of datatype to place in the set
 * elements_to_allocate  uint64_t        I       number of elements to allocate for the set
 * compare_func          function        I       function to compare presence of element in the set
+* hash_function         function        I       hash function to be used to determine indexes
 *
 * RETURNS: void
 *
@@ -184,9 +185,10 @@ void resize_set(void* id_of_set);
 void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val))
 {
         /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
+        *  Variable     Type            Description
+        *  --------     ----            -----------
+        *  i            uint64_t        Simple increment variable
+        * 
         */
         if(NULL == id_of_set)
         {
@@ -253,9 +255,10 @@ void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_t
 void set_insert(void* id_of_set, void* data_to_insert)
 {
         /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
+        *  Variable     Type            Description
+        *  --------     ----            -----------
+        *  idx          uint64_t        index of the bucket to add the new element
+        *  new_entry    struct bucket*  helps allocate the memory to the new data to insert   
         */
 
         if (set_contains(id_of_set, data_to_insert)) 
@@ -314,9 +317,11 @@ void set_insert(void* id_of_set, void* data_to_insert)
 void set_erase(void* id_of_set, void* element_to_erase)
 {
         /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
+        *  Variable     Type            Description
+        *  --------     ----            -----------
+        *  idx          uint64_t        index of the bucket to add the new element
+        *  element      struct bucket*  pointer to the bucket
+        *  prev         struct bucket*  auxiliary pointer to the previous bucket in the bucket linked list
         */
 
         uint64_t idx = ((struct set*)(id_of_set))->hash_function(element_to_erase) % ((struct set*)(id_of_set))->set_size_allocated;
@@ -367,9 +372,11 @@ void set_erase(void* id_of_set, void* element_to_erase)
 uint8_t set_contains(void* id_of_set, void* element_to_check)
 {
         /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
+        *  Variable     Type            Description
+        *  --------     ----            -----------
+        *  idx          uint64_t        index of the bucket to add the new element
+        *  bucket_aux   struct bucket*  pointer to the bucket
+        *
         */
 
         uint64_t idx = ((struct set*)(id_of_set))->hash_function(element_to_check) % ((struct set*)(id_of_set))->set_size_allocated;
@@ -424,7 +431,7 @@ uint8_t check_set_is_empty(void* id_of_set)
 *
 * FUNCTION NAME: check_set_size
 *
-* PURPOSE: Will return the current element count in the set
+* PURPOSE: Returns the current element count in the set
 *
 * ARGUMENTS:
 *
@@ -475,9 +482,11 @@ uint64_t check_set_size(void* id_of_set)
 void free_set(void* id_of_set)
 {
         /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
+        *  Variable     Type            Description
+        *  --------     ----            -----------
+        *  i            uint64_t        Simple increment variable
+        *  aux          struct bucket*  auxiliary pointer to current bucket being freed
+        *  aux_next     struct bucket*  auxiliary pointer to next bucket
         */
         if(NULL == id_of_set)
                 return;
@@ -523,7 +532,6 @@ void free_set(void* id_of_set)
 *
 *
 *****************************************************************/
-
 // uint64_t hash_function(void* data) 
 // {
 //         /* LOCAL VARIABLES:
@@ -543,7 +551,7 @@ void free_set(void* id_of_set)
 *
 * FUNCTION NAME: resize_set
 *
-* PURPOSE: 
+* PURPOSE: Resizes a set, whenever it gets too full
 *
 * ARGUMENTS:
 *
@@ -559,9 +567,14 @@ void free_set(void* id_of_set)
 void resize_set(void* id_of_set) 
 {
         /* LOCAL VARIABLES:
-        *  Variable        Type    Description
-        *  --------        ----    -----------
-        *  None
+        *  Variable             Type            Description
+        *  --------             ----            -----------
+        *  set_bucket_aux       struct bucket** auxiliary pointer to new memory position to place the set 
+        *  new_size             uint64_t        holds the new value allocated for the size of the array of buckets 
+        *  i                    uint64_t        increment variable
+        *  element              struct bucket*  pointer to the current element being sent to the new memory position
+        *  next                 struct bucket*  pointer to the next bucket to element
+        *  idx                  uint64_t        index of the bucket in the new memory position to place the bucket
         */
         if ((float)((struct set*)(id_of_set))->set_size/((struct set*)(id_of_set))->set_size_allocated < LOAD_FACTOR) 
                 return ;
@@ -617,7 +630,7 @@ void resize_set(void* id_of_set)
                 {
                     struct bucket *next = element->next;
                     
-                    size_t idx = ((struct set*)(id_of_set))->hash_function(element->data) % new_size;
+                    uint64_t idx = ((struct set*)(id_of_set))->hash_function(element->data) % new_size;
 
                     element->next = set_bucket_aux[idx];
                     set_bucket_aux[idx] = element;
