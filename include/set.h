@@ -78,6 +78,7 @@ extern "C" {
 * size_of_datatype      uint64_t        I       byte size of datatype to place in the set
 * elements_to_allocate  uint64_t        I       number of elements to allocate for the set
 * compare_func          function        I       function to compare presence of element in the set
+* hash_function         function        I       hash function to be used to determine indexes
 *
 * RETURNS: void
 *
