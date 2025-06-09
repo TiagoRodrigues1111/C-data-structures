@@ -72,12 +72,13 @@ extern "C" {
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_hash_map        void**	        I/O	pointer to the memory position of the hash map to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the hash map
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the hash map
-* compare_func          function        I       function to compare presence of element in the hash map
+* ARGUMENT 	                TYPE	        I/O	DESCRIPTION
+* --------                      ----            ---     ------------
+* id_of_hash_map                void**	        I/O	pointer to the memory position of the hash map to implement
+* size_of_key_datatype          uint64_t        I       byte size of key datatype to place in the hash map
+* size_of_value_datatype        uint64_t        I       byte size of value datatype to place in the hash map
+* elements_to_allocate          uint64_t        I       number of elements to allocate for the hash map
+* compare_func                  function        I       function to compare presence of element in the hash map
 *
 *
 * RETURNS: void
@@ -85,7 +86,7 @@ extern "C" {
 *
 *
 *****************************************************************/
-void create_hash_map(void** id_of_hash_map, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val));
+void create_hash_map(void** id_of_hash_map, uint64_t size_of_key_datatype, uint64_t size_of_value_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val));
 
 /******************************************************************
 *
@@ -150,7 +151,6 @@ void hash_map_erase(void* id_of_hash_map, void* key_to_erase);
 *****************************************************************/
 uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check);
 
-
 /******************************************************************
 *
 * FUNCTION NAME: hash_map_get_value       
@@ -170,8 +170,6 @@ uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check);
 *
 *****************************************************************/
 void* hash_map_get_value(void* id_of_hash_map, void* key);
-
-
 
 /******************************************************************
 *
@@ -212,7 +210,6 @@ uint8_t check_hash_map_is_empty(void* id_of_hash_map);
 *
 *****************************************************************/
 uint64_t check_hash_map_size(void* id_of_hash_map);
-
 
 /******************************************************************
 *
