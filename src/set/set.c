@@ -261,7 +261,7 @@ void set_insert(void* id_of_set, void* data_to_insert)
         *  new_entry    struct bucket*  helps allocate the memory to the new data to insert   
         */
 
-        if (set_contains(id_of_set, data_to_insert)) 
+        if (1 == set_contains(id_of_set, data_to_insert)) 
                 return ; 
 
         uint64_t idx = ((struct set*)(id_of_set))->hash_function(data_to_insert) % ((struct set*)(id_of_set))->set_size_allocated;
