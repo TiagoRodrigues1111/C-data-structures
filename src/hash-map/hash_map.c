@@ -266,6 +266,27 @@ void hash_map_insert(void* id_of_hash_map, void* key_to_insert, void* value_to_i
         *  idx          uint64_t        index of the bucket to add the new element
         *  new_entry    struct bucket*  helps allocate the memory to the new data to insert   
         */
+        if(NULL == id_of_hash_map)
+        {
+                fprintf(stderr, "Hash map pointer location is null\n");
+                return ;
+        }
+        if(UINT64_MAX == check_hash_map_size(id_of_hash_map))
+        {
+                fprintf(stderr, "Hash map full, can't add more elements\n");
+                return ;
+        }
+        if(NULL == key_to_insert)
+        {
+                fprintf(stderr, "Key pointer is null\n");
+                return ;
+        }
+        if(NULL == value_to_insert)
+        {
+                fprintf(stderr, "Value pointer is null\n");
+                return ;
+        }
+
 
         struct bucket *new_entry = NULL;
 
@@ -345,6 +366,17 @@ void hash_map_erase(void* id_of_hash_map, void* key_to_erase)
         *  element      struct bucket*  pointer to the bucket
         *  prev         struct bucket*  auxiliary pointer to the previous bucket in the bucket linked list
         */
+        if(NULL == id_of_hash_map)
+        {
+                fprintf(stderr, "Hash map pointer location is null\n");
+                return ;
+        }
+        if(NULL == key_to_erase)
+        {
+                fprintf(stderr, "Key pointer is null\n");
+                return ;
+        }
+
 
         uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key_to_erase) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
 
@@ -401,6 +433,17 @@ uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check)
         *  bucket_aux   struct bucket*  pointer to the bucket
         *
         */
+        if(NULL == id_of_hash_map)
+        {
+                fprintf(stderr, "Hash map pointer location is null\n");
+                return ;
+        }
+        if(NULL == key_to_check)
+        {
+                fprintf(stderr, "Key pointer is null\n");
+                return ;
+        }
+
         uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key_to_check) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
         struct bucket *bucket_aux = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
         
@@ -439,6 +482,17 @@ void* hash_map_get_value(void* id_of_hash_map, void* key)
         *  bucket_aux   struct bucket*  pointer to the bucket
         *
         */
+        if(NULL == id_of_hash_map)
+        {
+                fprintf(stderr, "Hash map pointer location is null\n");
+                return ;
+        }
+        if(NULL == key)
+        {
+                fprintf(stderr, "Key pointer is null\n");
+                return ;
+        }
+        
         uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
         struct bucket *bucket_aux = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
         
