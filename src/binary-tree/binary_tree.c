@@ -101,7 +101,7 @@ struct node
 
 /* 6 function prototypes */
 /*****************************************************/
-
+void free_left_and_right_node(struct node *parent);
 /*****************************************************/
 
 
@@ -439,7 +439,7 @@ void next_left_node_bt(void** node)
         {
                 return;
         }
-        (*(struct node**)(node)) = get_left_node_bt((*(struct node**)(node)));
+        (*(struct node**)(node)) = get_next_left_node_bt((*(struct node**)(node)));
         return;
 }
 
@@ -505,7 +505,7 @@ void next_right_node_bt(void** node)
         {
                 return;
         }
-        (*(struct node**)(node)) = get_right_node_bt((*(struct node**)(node)));
+        (*(struct node**)(node)) = get_next_right_node_bt((*(struct node**)(node)));
         return;
 }
 

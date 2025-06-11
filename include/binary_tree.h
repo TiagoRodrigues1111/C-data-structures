@@ -277,7 +277,7 @@ void next_right_node_bt(void** node);
 *
 *
 *****************************************************************/
-void* get_next_left_node_bt(void* node);
+void* get_next_right_node_bt(void* node);
 
 /******************************************************************
 *
