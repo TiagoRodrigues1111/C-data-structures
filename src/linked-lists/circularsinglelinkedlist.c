@@ -147,6 +147,11 @@ void create_list_csll(void** list_sentinel_node)
         *  --------        ----    -----------
         *  None
         */
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        }
         (*list_sentinel_node) = malloc(1*sizeof(struct sentinel_node));
         if(NULL == (*list_sentinel_node))
         {
@@ -185,6 +190,11 @@ void create_node_csll(void** node)
         *  --------        ----    -----------
         *  None
         */
+        if(NULL == node)
+        {
+                fprintf(stderr, "node pointer is null\n");
+                return ;
+        }
         (*node) = malloc(1*sizeof(struct node));
         if(NULL == (*node))
         {
@@ -267,6 +277,11 @@ void add_node_to_head_csll(void** list_sentinel_node, void* node)
         *  --------        ----    -----------
         *  None
         */
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        }
         if(NULL == (*list_sentinel_node))
         {
                 create_list_csll(list_sentinel_node);
@@ -316,6 +331,11 @@ void add_node_to_tail_csll(void** list_sentinel_node, void* node)
         *  --------     ----            -----------
         *  None      
         */
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        }
         if(NULL == (*list_sentinel_node))
         {
                 create_list_csll(list_sentinel_node);
@@ -367,9 +387,15 @@ void add_node_in_index_n_csll(void** list_sentinel_node, void* node, uint64_t po
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
-        *  aux_ptr      struct node*    auxiliary node to walk through the list         
-        */      
-         if(NULL == (*list_sentinel_node))
+        *  aux_ptr      struct node*    auxiliary node to walk through the list    
+        *  aux_head     struct node*    auxiliary node pointing to the head of the list 
+        */     
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        } 
+        if(NULL == (*list_sentinel_node))
         {
                 create_list_csll(list_sentinel_node);
 
@@ -392,7 +418,7 @@ void add_node_in_index_n_csll(void** list_sentinel_node, void* node, uint64_t po
         struct node* aux_head = (*(struct node**)((*(struct sentinel_node **)(list_sentinel_node))->head));
 
 
-        while(aux_head != get_next_node_csll((void *)aux_ptr) && position>1)                     //has to be 1
+        while(aux_head != get_next_node_csll((void *)aux_ptr) && position>1)                     //has to be 1          TODO: can be changed to go around after the head
         {
                 next_node_csll((void**) &aux_ptr);
                 position--;
@@ -435,6 +461,11 @@ void remove_head_node_csll(void** list_sentinel_node)
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node to free         
         */        
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        } 
         if(NULL == (*list_sentinel_node))
         {
                 return;
@@ -479,6 +510,11 @@ void remove_tail_node_csll(void** list_sentinel_node)
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node to free and for walking through the list         
         */
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        } 
         if(NULL == (*list_sentinel_node))
         {
                 return;
@@ -547,6 +583,11 @@ void remove_node_in_index_n_csll(void** list_sentinel_node, uint64_t position)
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to node to free and for walking through the list         
         */
+        if(NULL == list_sentinel_node)
+        {
+                fprintf(stderr, "list sentinel node pointer is null\n");
+                return ;
+        } 
         if(NULL == (*list_sentinel_node))
         {
                 return;
@@ -612,6 +653,14 @@ void next_node_csll(void** node)
         *  --------        ----    -----------
         *  None
         */
+        if(NULL == node)
+        {
+                return;
+        }
+        if(NULL == (*node))
+        {
+                return;
+        }
         (*(struct node**)(node)) = get_next_node_csll((*(struct node**)(node)));
         return;
 }
@@ -782,6 +831,15 @@ void  free_linked_list_csll(void** list_sentinel_node)
         *  --------     ----            -----------
         *  aux_ptr      struct node*    auxiliary pointer to a node to free         
         */  
+
+        if(NULL == list_sentinel_node)
+        {
+                return;
+        }
+        if(NULL == (*list_sentinel_node))
+        {
+                return;
+        }             
         ((*(struct sentinel_node **)(list_sentinel_node))->tail)->next = NULL;
         while(NULL !=  ((*(struct sentinel_node **)(list_sentinel_node))->head))
         {
