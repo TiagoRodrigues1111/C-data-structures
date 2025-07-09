@@ -11,11 +11,11 @@
 *                                                                                                       
 * Date          Author          Change Id       Release         Description Of Change                   
 * ----------    --------------- ---------       -------         -----------------------------------     
-* 13-06-2025    Tiago Rodrigues                       1         File preparation     
+* 08-07-2025    Tiago Rodrigues                       1         File preparation     
 *                                                                                                      
 *******************************************************************************************************/
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef GRAPH_H
+#define GRAPH_H
 
 /* 0 copyright/licensing */
 /*******************************************************************************************************
@@ -60,6 +60,7 @@ extern "C" {
 /*****************************************************/
 
 
+// weight_compare_func   function         I       function to compare weights of nodes
 /******************************************************************
 *
 * FUNCTION NAME: create_graph 
@@ -72,15 +73,16 @@ extern "C" {
 * --------              ----            ---     ------------
 * id_of_graph	        void**	        I/O	pointer to the memory position of the graph to implement
 * size_of_datatype      uint64_t        I       byte size of datatype to place in the graph
-* nodes_to_allocate     uint64_t        I       number of elements to initially allocate for the graph
+* size_of_weight        uint64_t        I       byte size of datatype of the weights
+* num_of_vertices       uint64_t        I       number of vertices of the graph
+
 *
 * RETURNS: void
 *
 *
 *
 *****************************************************************/
-void create_graph(void** id_of_graph, uint64_t size_of_datatype, uint64_t nodes_to_allocate);           // send the size of values;
-
+void create_graph(void** id_of_graph, uint64_t size_of_datatype, uint64_t size_of_weight, uint64_t num_of_vertices);           // send the size of values;
 
 /******************************************************************
 *
@@ -103,7 +105,7 @@ void create_graph(void** id_of_graph, uint64_t size_of_datatype, uint64_t nodes_
 *
 *
 *****************************************************************/
-void add_edge_graph(void* id_of_graph, void *weight, uint64_t size_of_weight, void* source, void* destination, uint8_t undirected);
+void add_edge_graph(void* id_of_graph, void *weight, void* source, void* destination, uint8_t undirected);
 
 /******************************************************************
 *
@@ -127,8 +129,6 @@ void add_edge_graph(void* id_of_graph, void *weight, uint64_t size_of_weight, vo
 void remove_edge_graph(void* id_of_graph, void* source, void* destination, uint8_t undirected);
 
 
-
-
 /******************************************************************
 *
 * FUNCTION NAME: free_graph
@@ -149,6 +149,8 @@ void remove_edge_graph(void* id_of_graph, void* source, void* destination, uint8
 *****************************************************************/
 void free_graph(void* id_of_graph);
 
+
+void print_graph(void* id_of_graph);
 
 
 #ifdef __cplusplus
