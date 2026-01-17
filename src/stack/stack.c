@@ -1,24 +1,24 @@
 /*******************************************************************************************************************
 * FILE NAME: stack.c
-*                                                                                                               
-* PURPOSE: This file implements the functions defined in stack.h     
-*                                                                                                               
-* FILE REFERENCES:                                                                                              
-*                                                                                                               
-* Name                          I/O                     Description                                             
-* ----                          ---                     -----------                                             
-* none     
+*
+* PURPOSE: This file implements the functions defined in stack.h
+*
+* FILE REFERENCES:
+*
+* Name                          I/O                     Description
+* ----                          ---                     -----------
+* none
 
-* EXTERNAL VARIABLES:                                                                                           
+* EXTERNAL VARIABLES:
 *
 *
-* Name          Type            I/O                     Description                                             
-* ----          ----            ---                     -----------                                             
+* Name          Type            I/O                     Description
+* ----          ----            ---                     -----------
 * none
 *
 *
-* EXTERNAL REFERENCES:                                                                                          
-* Name                          Description                                                                     
+* EXTERNAL REFERENCES:
+* Name                          Description
 * ----                          -----------
 * malloc                        allocates memory space                                                          https://man7.org/linux/man-pages/man3/free.3.html
 * realloc                       reallocates memory space                                                        https://man7.org/linux/man-pages/man3/realloc.3p.html
@@ -29,34 +29,36 @@
 *
 *
 * ASSUMPTIONS, CONSTRAINTS, RESTRICTIONS:
-*  It is assumed that the stack will never have more than 2^64 elements.                               
-*  It is assumed that the user will grab only 1 element size from the memory position returned from check_stack_top 
+*  It is assumed that the stack will never have more than 2^64 elements.
+*  It is assumed that the user will grab only 1 element size from the memory position returned from check_stack_top
 *
 *
-* NOTES:                                                                                                        
+* NOTES:
 *
 *
-* REQUIREMENTS/FUNCTIONAL SPECIFICATIONS REFERENCES:                                                            
+* REQUIREMENTS/FUNCTIONAL SPECIFICATIONS REFERENCES:
 *
 *
-* DEVELOPMENT HISTORY:                                                                                          
+* DEVELOPMENT HISTORY:
 *
-* Date          Author                  Change Id       Release         Description Of Change                   
-* ----------    ---------------         ---------       -------         ---------------------   
-* 14-01-2025    Tiago Rodrigues                               0         File preparation     
-* 17-01-2025    Tiago Rodrigues                               0         Initial Implementation of stack, for uint8_t   
-* 20-01-2025    Tiago Rodrigues                               0         Changed operations to use memcpy   
-* 21-01-2025    Tiago Rodrigues                               0         Changed some operations for edge cases, 
+* Date          Author                  Change Id       Release         Description Of Change
+* ----------    ---------------         ---------       -------         ---------------------
+* 14-01-2025    Tiago Rodrigues                               0         File preparation
+* 17-01-2025    Tiago Rodrigues                               0         Initial Implementation of stack, for uint8_t
+* 20-01-2025    Tiago Rodrigues                               0         Changed operations to use memcpy
+* 21-01-2025    Tiago Rodrigues                               0         Changed some operations for edge cases,
 * ----------    ---------------         ---------       -------          and commmented function preambles
-* 23-01-2025    Tiago Rodrigues                               0         Updated create_stack function, and added 
+* 23-01-2025    Tiago Rodrigues                               0         Updated create_stack function, and added
 * ----------    ---------------         ---------       -------          a few good C practices
 * 31-01-2025    Tiago Rodrigues                           1.0.1         Added better error handling
+* 17-01-2026    Tiago Rodrigues                               1         Changed return type of check_stack_is_empty from
+* ----------    ---------------         ---------       -------          uint8_t to bool
 *
 *
 * ALGORITHM (PDL)
-*    
 *
-*                                                                                                           
+*
+*
 ****************************************************************************************************************/
 
 
@@ -85,7 +87,7 @@
 /* 1.4 other libraries' headers*/
 
 /* 1.5 project's headers */
-
+#include "types.h"
 
 
 
@@ -402,12 +404,12 @@ void stack_push(void* id_of_stack, void* data_to_push)
 * id_of_stack   void*	        I	pointer to the memory position of the stack to check
 *
 *
-* RETURNS: uint8_t (as 0 or 1)
+* RETURNS: bool ( 0 or 1)
 *
 *
 *
 *****************************************************************/
-uint8_t check_stack_is_empty(void* id_of_stack)
+bool check_stack_is_empty(void* id_of_stack)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -417,13 +419,13 @@ uint8_t check_stack_is_empty(void* id_of_stack)
         if(NULL == id_of_stack)
         {
                 fprintf(stderr, "Stack pointer location is null\n");
-                return 0;
+                return false;
         }
                 
         if(0 == ((struct stack*)id_of_stack)->stack_size)
-                return 1;
+                return true;
         else
-                return 0;
+                return false;
 }
 
 
