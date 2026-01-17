@@ -1,22 +1,25 @@
 
 /*******************************************************************************************************
-* NAME: stack.h                                                                    
-*                                                                                                       
-* PURPOSE: This file defines the function prototypes for a stack implementation                                                                       
-*                                                                                                       
-* GLOBAL VARIABLES: None                                                                                
-*                                                                                                       
-*                                                                                                       
-* DEVELOPMENT HISTORY:                                                                                  
-*                                                                                                       
-* Date          Author          Change Id       Release         Description Of Change                   
-* ----------    --------------- ---------       -------         -----------------------------------     
-* 14-01-2025    Tiago Rodrigues                       1         File preparation     
-* 14-01-2025    Tiago Rodrigues                       1         Added prototype functions  
-* 21-01-2025    Tiago Rodrigues                       1         Commmented function preambles 
-* 23-01-2025    Tiago Rodrigues                       1         Changed create stack to allow for number of 
+* NAME: stack.h
+*
+* PURPOSE: This file defines the function prototypes for our stack implementation
+*
+* GLOBAL VARIABLES: None
+*
+*
+*
+* DEVELOPMENT HISTORY:
+*
+* Date          Author          Change Id       Release         Description Of Change
+* ----------    --------------- ---------       -------         -----------------------------------
+* 14-01-2025    Tiago Rodrigues                       1         File preparation
+* 14-01-2025    Tiago Rodrigues                       1         Added prototype functions
+* 21-01-2025    Tiago Rodrigues                       1         Commmented function preambles
+* 23-01-2025    Tiago Rodrigues                       1         Changed create stack to allow for number of
 * ----------    --------------- ---------       -------          elements to be sent for allocation
-*                                                                                                      
+* 17-01-2026    Tiago Rodrigues                       1         Miniscule changes to spaces and tabs
+* 
+*
 *******************************************************************************************************/
 #ifndef STACK_H
 #define STACK_H
@@ -36,6 +39,8 @@ extern "C" {
 /* 1 includes */
 /*****************************************************/
 #include <stdint.h>
+
+
 
 /*****************************************************/
 
@@ -66,7 +71,7 @@ extern "C" {
 
 /******************************************************************
 *
-* FUNCTION NAME: create_stack       
+* FUNCTION NAME: create_stack
 *
 * PURPOSE: Allocates the needed memory for the stack wanted
 *
@@ -83,12 +88,12 @@ extern "C" {
 *
 *
 *****************************************************************/
-void create_stack(void** id_of_stack, uint64_t size_of_datatype, uint64_t elements_to_allocate);           // send the size of values;
+void create_stack(void** id_of_stack, uint64_t size_of_datatype, uint64_t elements_to_allocate);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_stack_top       
+* FUNCTION NAME: check_stack_top
 *
 * PURPOSE: Returns the memory position of the element that is currently on the top of the stack
 *
