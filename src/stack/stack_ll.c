@@ -46,7 +46,8 @@
 * 23-01-2025    Tiago Rodrigues                               1         Updated create_stack function, and added 
 * ----------    ---------------         ---------       -------          a few good C practices
 * 31-01-2025    Tiago Rodrigues                           1.0.1         Added better error handling 
-*
+* 17-01-2026    Tiago Rodrigues                               2         Changed return type of check_stack_is_empty from
+* ----------    ---------------         ---------       -------          uint8_t to bool
 *                                                                                                              
 * ALGORITHM (PDL)
 *    
@@ -80,6 +81,7 @@
 /* 1.4 other libraries' headers*/
 
 /* 1.5 project's headers */
+#include "types.h"
 
 /*****************************************************/
 
@@ -380,12 +382,12 @@ void stack_push(void* id_of_stack, void* data_to_push)
 * id_of_stack   void*	        I	pointer to the memory position of the stack to check
 *
 *
-* RETURNS: uint8_t (as 0 or 1)
+* RETURNS: bool (as 0 or 1)
 *
 *
 *
 *****************************************************************/
-uint8_t check_stack_is_empty(void* id_of_stack)
+bool check_stack_is_empty(void* id_of_stack)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -395,13 +397,13 @@ uint8_t check_stack_is_empty(void* id_of_stack)
         if(NULL == id_of_stack)
         {
                 fprintf(stderr, "Stack pointer location is null\n");
-                return 0;
+                return false;
         }
                 
         if(0 == ((struct stack*)id_of_stack)->stack_size)
-                return 1;
+                return true;
         else
-                return 0;
+                return false;
 }
 
 
