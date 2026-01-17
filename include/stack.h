@@ -39,7 +39,7 @@ extern "C" {
 /* 1 includes */
 /*****************************************************/
 #include <stdint.h>
-
+#include "types.h"
 
 
 /*****************************************************/
@@ -173,7 +173,7 @@ void stack_push(void* id_of_stack, void* data_to_push);
 *
 *
 *****************************************************************/
-uint8_t check_stack_is_empty(void* id_of_stack);
+bool check_stack_is_empty(void* id_of_stack);
 
 
 /******************************************************************
