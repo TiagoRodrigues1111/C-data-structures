@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "types.h"
 // #include <errno.h>
 
 void single_stack_simple_test()
@@ -12,7 +13,7 @@ void single_stack_simple_test()
         void *stack1 = NULL;
 
         create_stack(&stack1, sizeof(uint16_t),0);
-        printf("%u\n",check_stack_is_empty(stack1));
+        printf("%d\n",check_stack_is_empty(stack1));
 
 
         uint16_t data_test = 3;
@@ -74,7 +75,7 @@ void two_stacks_simple_test()
         create_stack(&stack2, sizeof(uint16_t),0);
 
 
-        printf("%u\n",check_stack_is_empty(stack1));
+        printf("%d\n",check_stack_is_empty(stack1));
 
 
         uint16_t data_test = 3;
@@ -256,7 +257,7 @@ void stack_stress_test4()
                         }
                         break; 
                 case 3:                                         // check_stack_is_empty
-                        printf("stack empty?: %u\n",check_stack_is_empty(stack1));
+                        printf("stack empty?: %d\n",check_stack_is_empty(stack1));
                         break; 
                 case 4:                                         // check_stack_size
                         printf("stack size: %lu\n",check_stack_size(stack1));
@@ -310,7 +311,8 @@ int main()
 {
         tutorial();
 
-        // single_stack_simple_test();
+        
+        //single_stack_simple_test();
         
         //single_stack_simple_test_2();
 
