@@ -48,6 +48,7 @@
 * 23-01-2025    Tiago Rodrigues                               1         Initial queue implementation     
 * 27-01-2025    Tiago Rodrigues                               1         Added comments to functions
 * 03-02-2025    Tiago Rodrigues                               1         Added fix to data being NULL bug
+* 18-01-2026    Tiago Rodrigues                               2         Changed functions for opaqueness
 *                                                                                                               
 * ALGORITHM (PDL)
 *    
@@ -144,86 +145,83 @@ struct queue
 
 /******************************************************************
 *
-* FUNCTION NAME: create_queue       
+* FUNCTION NAME: create_queue
 *
 * PURPOSE: Allocates the needed memory for the queue wanted
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue	        void**	        I/O	pointer to the memory position of the queue to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the queue
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the queue
+* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* --------              ----            ---     ------------
+* size_of_datatype      size_t        I       byte size of datatype to place in the stack
+* elements_to_allocate  size_t        I       number of elements to allocate for the stack
 *
-* RETURNS: void
+* RETURNS: queue_t*
 *
 *
 *
 *****************************************************************/
-void create_queue(void** id_of_queue, uint64_t size_of_datatype, uint64_t elements_to_allocate)
+queue_t* create_queue(size_t size_of_datatype, size_t elements_to_allocate)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
         *  --------        ----    -----------
         *  None
         */
-        if(NULL == id_of_queue)
-        {
-                fprintf(stderr, "Queue pointer location is null\n");
-                return ;
-        }
-                
+
+        queue_t* id_of_queue = NULL;
 
         // Allocation of a queue struct
-        (*id_of_queue) = malloc(1*sizeof(struct queue));                       
-        if(NULL == *id_of_queue)
+        id_of_queue = malloc(1*sizeof(struct queue));                       
+        if(NULL == id_of_queue)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
 
         if(0 == elements_to_allocate)
-                ((struct queue*)(*id_of_queue))->queue_size_allocated = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
+                id_of_queue->queue_size_allocated = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
         else
-                ((struct queue*)(*id_of_queue))->queue_size_allocated = elements_to_allocate;
+                id_of_queue->queue_size_allocated = elements_to_allocate;
 
-        ((struct queue*)(*id_of_queue))->queue_front = 0;
-        ((struct queue*)(*id_of_queue))->queue_back = 0;
-        ((struct queue*)(*id_of_queue))->queue_size = 0;
-        ((struct queue*)(*id_of_queue))->datatype_size = size_of_datatype;
-        ((struct queue*)(*id_of_queue))->k_aux = 1;
+        id_of_queue->queue_front = 0;
+        id_of_queue->queue_back = 0;
+        id_of_queue->queue_size = 0;
+        id_of_queue->datatype_size = size_of_datatype;
+        id_of_queue->k_aux = 1;
         
         // Allocate space in the queue for the array of values
-        ((struct queue*)(*id_of_queue))->queue_data = (void*) malloc(((struct queue*)(*id_of_queue))->queue_size_allocated*((struct queue*)(*id_of_queue))->datatype_size);     
-        if(NULL == ((struct queue*)(*id_of_queue))->queue_data)
+        id_of_queue->queue_data = (void*) malloc(id_of_queue->queue_size_allocated*id_of_queue->datatype_size);     
+        if(NULL == id_of_queue->queue_data)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
-        
-        return ;        
+
+        return id_of_queue;        
 }
 
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_queue_front
+* FUNCTION NAME: queue_front
 *
 * PURPOSE: Returns the memory position of the element that is currently on the front of the queue
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
-* 
+* --------      ----            ---     ------------
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
+* data_at_front void*	        O	pointer to the memory position of the element at the front of the queue
 *
-* RETURNS: void* (pointer to the memory position of the element at the front of the queue)
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void* check_queue_front(void* id_of_queue)
+bool queue_front(const queue_t* id_of_queue, void* data_at_front)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -233,16 +231,17 @@ void* check_queue_front(void* id_of_queue)
         if(NULL == id_of_queue)
         {
                 fprintf(stderr, "Queue pointer location is null\n");
-                return NULL;
+                return false;
         }
-               
 
-        if(check_queue_is_empty(id_of_queue))                       
-                return NULL;
-
-        return (void *) &((uint8_t*)(((struct queue*)id_of_queue)->queue_data))[(((struct queue*)id_of_queue)->queue_front)*((struct queue*)id_of_queue)->datatype_size];       
+        if(queue_is_empty(id_of_queue))                       
+                return false;
 
 
+
+        memcpy(data_at_front, (void *) &((uint8_t*)(id_of_queue->queue_data))[(id_of_queue->queue_front)*id_of_queue->datatype_size], id_of_queue->datatype_size);
+
+        return true;       
 
 }
 
@@ -255,15 +254,14 @@ void* check_queue_front(void* id_of_queue)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
-* 
+* --------      ----            ---     ------------
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
+* data_at_back  void*	        O	pointer to the memory position of the element at the back of the queue
 *
-* RETURNS: void* (pointer to the memory position of the element at the back of the queue)
-*
-*
+* RETURNS: bool
 *
 *****************************************************************/
-void* check_queue_back(void* id_of_queue)
+bool queue_back(const queue_t* id_of_queue, void* data_at_back)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -273,18 +271,15 @@ void* check_queue_back(void* id_of_queue)
         if(NULL == id_of_queue)
         {
                 fprintf(stderr, "Queue pointer location is null\n");
-                return NULL;
+                return false;
         }
                
 
-        if(check_queue_is_empty(id_of_queue))                       
-                return NULL;
+        if(queue_is_empty(id_of_queue))                       
+                return false;
 
-        return (void *) &((uint8_t*)(((struct queue*)id_of_queue)->queue_data))[(((struct queue*)id_of_queue)->queue_back)*((struct queue*)id_of_queue)->datatype_size];  
-
-
-
-
+        memcpy(data_at_back, (void *) &((uint8_t*)(id_of_queue->queue_data))[(id_of_queue->queue_back)*id_of_queue->datatype_size], id_of_queue->datatype_size);
+        return true;
 }
 
 
@@ -299,15 +294,16 @@ void* check_queue_back(void* id_of_queue)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to pop from
+* --------      ----            ---     ------------
+* id_of_queue   queue_t*	I	pointer to the memory position of the queue to pop from
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void queue_pop(void* id_of_queue)
+bool queue_pop(queue_t* id_of_queue)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -317,16 +313,17 @@ void queue_pop(void* id_of_queue)
         if(NULL == id_of_queue)
         {
                 fprintf(stderr, "Queue pointer location is null\n");
-                return ;
+                return false;
         }   
-        if(!check_queue_is_empty(id_of_queue))
+        if(!queue_is_empty(id_of_queue))
         {
-                ((struct queue*)id_of_queue)->queue_size--;
-                if(!check_queue_is_empty(id_of_queue))
-                        ((struct queue*)id_of_queue)->queue_front++;                            // TODO: if front is at end of array, front is decremented instead
+                id_of_queue->queue_size--;
+                if(!queue_is_empty(id_of_queue))
+                        id_of_queue->queue_front++;                            // TODO: if front is at end of array, front is decremented instead
+                return true;
         }
-        return;
-
+        
+        return false;
 }
 
 
@@ -340,16 +337,17 @@ void queue_pop(void* id_of_queue)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to which the element is being push to
+* --------      ----            ---     ------------
+* id_of_queue   queue_t*	I	pointer to the memory position of the queue to which the element is being push to
 * data_to_push  void*	        I	pointer to the memory position of the data to push into the queue
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void queue_push(void* id_of_queue, void* data_to_push)
+bool queue_push(queue_t* id_of_queue, void* data_to_push)
 {
        /* LOCAL VARIABLES:
         *  Variable     Type    Description
@@ -359,36 +357,36 @@ void queue_push(void* id_of_queue, void* data_to_push)
         if(NULL == id_of_queue)
         {
                 fprintf(stderr, "Queue pointer location is null\n");
-                return ;
+                return false;
         }
-        if(UINT64_MAX == ((struct queue*)id_of_queue)->queue_back)
+        if(UINT64_MAX == id_of_queue->queue_back)
         {
                 fprintf(stderr, "Queue full, can't add more elements\n");
-                return ;
+                return false;
         }
         if(NULL == data_to_push)
         {
                 fprintf(stderr, "Data pointer is null\n");
-                return ;
+                return false;
         }
 
 
-        if(!check_queue_is_empty(id_of_queue))                                  //caution (left == right will not work, because they are the same for 1 element)
-                 ((struct queue*)id_of_queue)->queue_back++;
+        if(!queue_is_empty(id_of_queue))                                  //caution (left == right will not work, because they are the same for 1 element)
+                 id_of_queue->queue_back++;
         
-        ((struct queue*)id_of_queue)->queue_size++;
+        id_of_queue->queue_size++;
        
         // reallocate memory if num of elements in queue becomes larger than the max num of elements allocated for the queue (has to be >= because queue_back is zero for first element)
-        if(((struct queue*)id_of_queue)->queue_back >= ((struct queue*)id_of_queue)->queue_size_allocated)               // TODO: better implementation to prevent uncontrollable increase in empty queue space
+        if(id_of_queue->queue_back >= id_of_queue->queue_size_allocated)               // TODO: better implementation to prevent uncontrollable increase in empty queue space
         {
 
                 void* queue_aux = NULL;
-                if(1 == (((struct queue*)id_of_queue)->k_aux))
+                if(1 == (id_of_queue->k_aux))
                 {
-                        queue_aux = realloc(((struct queue*)id_of_queue)->queue_data, (((struct queue*)id_of_queue)->queue_size_allocated + ((struct queue*)id_of_queue)->queue_size_allocated)*((struct queue*)id_of_queue)->datatype_size);
+                        queue_aux = realloc(id_of_queue->queue_data, (id_of_queue->queue_size_allocated + id_of_queue->queue_size_allocated)*id_of_queue->datatype_size);
                         if(NULL != queue_aux)                   // this is not needed, and could be placed after the while, however the shift left is a bit faster than the addition
                         {
-                                ((struct queue*)id_of_queue)->queue_size_allocated <<= 1;
+                                id_of_queue->queue_size_allocated <<= 1;
                         }
                 }
                 else
@@ -397,27 +395,28 @@ void queue_push(void* id_of_queue, void* data_to_push)
                         {
                                 perror("Memory reallocation failed");
                                 printf("Attempting smaller reallocation\n");
-                                (((struct queue*)id_of_queue)->k_aux)<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
+                                (id_of_queue->k_aux)<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
                                  
-                                if(0 == (((struct queue*)id_of_queue)->queue_size_allocated/(((struct queue*)id_of_queue)->k_aux)))
+                                if(0 == (id_of_queue->queue_size_allocated/(id_of_queue->k_aux)))
                                 {
                                         fprintf(stderr, "Impossible to reallocate queue\n");
                                         //perror("Impossible to reallocate queue");
-                                        return ;
+                                        return false;
                                 }
-                                queue_aux = realloc(((struct queue*)id_of_queue)->queue_data, (((struct queue*)id_of_queue)->queue_size_allocated + (((struct queue*)id_of_queue)->queue_size_allocated / (((struct queue*)id_of_queue)->k_aux)))*((struct queue*)id_of_queue)->datatype_size);
+                                queue_aux = realloc(id_of_queue->queue_data, (id_of_queue->queue_size_allocated + (id_of_queue->queue_size_allocated / (id_of_queue->k_aux)))*id_of_queue->datatype_size);
                         }
 
-                        ((struct queue*)id_of_queue)->queue_size_allocated += (((struct queue*)id_of_queue)->queue_size_allocated/(((struct queue*)id_of_queue)->k_aux));          
+                        id_of_queue->queue_size_allocated += (id_of_queue->queue_size_allocated/(id_of_queue->k_aux));          
                 }
-                
-                ((struct queue*)id_of_queue)->queue_data = queue_aux;
+
+                id_of_queue->queue_data = queue_aux;
 
         }
 
-        memcpy(check_queue_back(id_of_queue), data_to_push, ((struct queue*)id_of_queue)->datatype_size);
 
-        return ;
+        memcpy((void *) &((uint8_t*)(id_of_queue->queue_data))[(id_of_queue->queue_back)*id_of_queue->datatype_size], data_to_push, id_of_queue->datatype_size);
+
+        return true;
 
 }
 
@@ -425,22 +424,23 @@ void queue_push(void* id_of_queue, void* data_to_push)
 
 /******************************************************************
 *
-* FUNCTION NAME: check_queue_is_empty
+* FUNCTION NAME: queue_is_empty
 *
 * PURPOSE: Checks if the queue is empty or not
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
+* --------      ----            ---     ------------
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_queue_is_empty(void* id_of_queue)
+bool queue_is_empty(const queue_t* id_of_queue)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -453,7 +453,7 @@ uint8_t check_queue_is_empty(void* id_of_queue)
                 return 0;
         }
                 
-        if(0 == ((struct queue*)id_of_queue)->queue_size)
+        if(0 == id_of_queue->queue_size)
                 return 1;
         else
                 return 0;
@@ -464,22 +464,23 @@ uint8_t check_queue_is_empty(void* id_of_queue)
 
 /******************************************************************
 *
-* FUNCTION NAME: check_queue_size
+* FUNCTION NAME: queue_size
 *
 * PURPOSE: Will return the current element count in the queue
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
+* --------      ----            ---     ------------
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
 *
 *
-* RETURNS: uint64_t (size of the queue)
+* RETURNS: size_t (size of the queue)
 *
 *
 *
 *****************************************************************/
-uint64_t check_queue_size(void* id_of_queue)
+size_t queue_size(const queue_t* id_of_queue)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -492,7 +493,7 @@ uint64_t check_queue_size(void* id_of_queue)
                 return 0;
         }
 
-        return ((struct queue*)id_of_queue)->queue_size;
+        return id_of_queue->queue_size;
 
 
 
@@ -507,7 +508,8 @@ uint64_t check_queue_size(void* id_of_queue)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_queue   void*	        I	pointer to the memory position of the queue to free
+* --------      ----            ---     ------------
+* id_of_queue   queue_t*	I	pointer to the memory position of the queue to free
 *
 *
 * RETURNS: void
@@ -515,7 +517,7 @@ uint64_t check_queue_size(void* id_of_queue)
 *
 *
 *****************************************************************/
-void free_queue(void* id_of_queue)
+void free_queue(queue_t* id_of_queue)
 {
 
         /* LOCAL VARIABLES:
@@ -526,8 +528,8 @@ void free_queue(void* id_of_queue)
         if(NULL == id_of_queue)
                 return;
 
-        if(NULL != ((struct queue*)id_of_queue)->queue_data)
-                free(((struct queue*)id_of_queue)->queue_data);
+        if(NULL != id_of_queue->queue_data)
+                free(id_of_queue->queue_data);
         
         free(id_of_queue);
         return ;

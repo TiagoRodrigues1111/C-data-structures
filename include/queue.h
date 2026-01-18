@@ -37,6 +37,8 @@ extern "C" {
 /*****************************************************/
 #include <stdint.h>
 
+#include "types.h"
+
 /*****************************************************/
 
 /* 2 defines */
@@ -51,6 +53,7 @@ extern "C" {
 
 /* 4 typedefs */
 /*****************************************************/
+typedef struct queue queue_t;
 
 /*****************************************************/
 
@@ -67,7 +70,7 @@ extern "C" {
 
 /******************************************************************
 *
-* FUNCTION NAME: create_queue       
+* FUNCTION NAME: create_queue
 *
 * PURPOSE: Allocates the needed memory for the queue wanted
 *
@@ -75,21 +78,21 @@ extern "C" {
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_queue	        void**	        I/O	pointer to the memory position of the queue to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the queue
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the queue
+* size_of_datatype      size_t        I       byte size of datatype to place in the stack
+* elements_to_allocate  size_t        I       number of elements to allocate for the stack
 *
-* RETURNS: void
+* RETURNS: queue_t*
 *
 *
 *
 *****************************************************************/
-void create_queue(void** id_of_queue, uint64_t size_of_datatype, uint64_t elements_to_allocate);
+queue_t* create_queue(size_t size_of_datatype, size_t elements_to_allocate);
+
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_queue_front
+* FUNCTION NAME: queue_front
 *
 * PURPOSE: Returns the memory position of the element that is currently on the front of the queue
 *
@@ -97,16 +100,15 @@ void create_queue(void** id_of_queue, uint64_t size_of_datatype, uint64_t elemen
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
-* 
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
+* data_at_front void*	        O	pointer to the memory position of the element at the front of the queue
 *
-* RETURNS: void* (pointer to the memory position of the element at the front of the queue)
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void* check_queue_front(void* id_of_queue);
-
+bool queue_front(const queue_t* id_of_queue, void* data_at_front);
 
 
 
@@ -120,15 +122,13 @@ void* check_queue_front(void* id_of_queue);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
-* 
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
+* data_at_back  void*	        O	pointer to the memory position of the element at the back of the queue
 *
-* RETURNS: void* (pointer to the memory position of the element at the back of the queue)
-*
-*
+* RETURNS: bool
 *
 *****************************************************************/
-void* check_queue_back(void* id_of_queue);
+bool queue_back(const queue_t* id_of_queue, void* data_at_back);
 
 
 /******************************************************************
@@ -141,15 +141,15 @@ void* check_queue_back(void* id_of_queue);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to pop from
+* id_of_queue   queue_t*	I	pointer to the memory position of the queue to pop from
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void queue_pop(void* id_of_queue);
+bool queue_pop(queue_t* id_of_queue);
 
 
 /******************************************************************
@@ -162,21 +162,21 @@ void queue_pop(void* id_of_queue);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to which the element is being push to
+* id_of_queue   queue_t*	I	pointer to the memory position of the queue to which the element is being push to
 * data_to_push  void*	        I	pointer to the memory position of the data to push into the queue
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void queue_push(void* id_of_queue, void* data_to_push);
+bool queue_push(queue_t* id_of_queue, void* data_to_push);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_queue_is_empty
+* FUNCTION NAME: queue_is_empty
 *
 * PURPOSE: Checks if the queue is empty or not
 *
@@ -184,21 +184,21 @@ void queue_push(void* id_of_queue, void* data_to_push);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_queue_is_empty(void* id_of_queue);
+bool queue_is_empty(const queue_t* id_of_queue);
 
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_queue_size
+* FUNCTION NAME: queue_size
 *
 * PURPOSE: Will return the current element count in the queue
 *
@@ -206,15 +206,15 @@ uint8_t check_queue_is_empty(void* id_of_queue);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to check
+* id_of_queue   const queue_t*	I	pointer to the memory position of the queue to check
 *
 *
-* RETURNS: uint64_t (size of the queue)
+* RETURNS: size_t (size of the queue)
 *
 *
 *
 *****************************************************************/
-uint64_t check_queue_size(void* id_of_queue);
+size_t queue_size(const queue_t* id_of_queue);
 
 
 
@@ -228,7 +228,7 @@ uint64_t check_queue_size(void* id_of_queue);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_queue   void*	        I	pointer to the memory position of the queue to free
+* id_of_queue   queue_t*	I	pointer to the memory position of the queue to free
 *
 *
 * RETURNS: void
@@ -236,8 +236,7 @@ uint64_t check_queue_size(void* id_of_queue);
 *
 *
 *****************************************************************/
-void free_queue(void* id_of_queue);
-
+void free_queue(queue_t* id_of_queue);
 
 
 

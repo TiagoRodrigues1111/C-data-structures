@@ -8,12 +8,12 @@
 void single_queue_simple_test()
 {
 
-        void *queue1 = NULL;
+        queue_t *queue1 = NULL;
         uint16_t data_test = 0;
 
-        create_queue(&queue1, sizeof(uint16_t), 0);
+        queue1 = create_queue(sizeof(uint16_t), 0);
 
-        printf("%u\n",check_queue_is_empty(queue1));
+        printf("%u\n",queue_is_empty(queue1));
         
 
         data_test = 1;
@@ -25,17 +25,28 @@ void single_queue_simple_test()
         data_test = 3;
         queue_push(queue1,(void*) &data_test);
         
+        uint16_t queue_top = 0;
 
-        printf("%u\n", *((uint16_t*)check_queue_front(queue1)));
+        if(queue_front(queue1, (void*) &queue_top))
+        {
+                printf("%u\n", queue_top);
+        }
         queue_pop(queue1);
 
-        printf("%u\n", *((uint16_t*)check_queue_front(queue1)));
+
+        if(queue_front(queue1, (void*) &queue_top))
+        {
+                printf("%u\n", queue_top);
+        }
         queue_pop(queue1);
 
-        printf("%u\n", *((uint16_t*)check_queue_front(queue1)));
+        if(queue_front(queue1, (void*) &queue_top))
+        {
+                printf("%u\n", queue_top);
+        }
 
 
-        printf("%lu\n",check_queue_size(queue1));
+        printf("%lu\n",queue_size(queue1));
 
         free_queue(queue1);
 
@@ -46,10 +57,10 @@ void single_queue_simple_test()
 /* High memory usage test */
 void queue_stress_test1()
 {
-        void *queue1=NULL;
+        queue_t *queue1=NULL;
         uint16_t data1=0; 
 
-        create_queue(&queue1,sizeof(uint16_t),100);
+        queue1 = create_queue(sizeof(uint16_t), 100);
 
         // uint64_t n = 400000000;
         uint64_t n = 400000;
@@ -57,9 +68,11 @@ void queue_stress_test1()
         while(0 < n)
         {
                 
-                if(NULL != check_queue_front(queue1))
+                uint16_t check_value = 0;
+
+                if(true == queue_front(queue1, (void*) &check_value))
                 {
-                        // printf("%lu",*((uint16_t*)check_queue_top(queue1)));
+                        // printf("%u",check_value);
                 }
 
                 data1++;
@@ -69,10 +82,10 @@ void queue_stress_test1()
 
 
         }
-        while(!check_queue_is_empty(queue1))
+        while(!queue_is_empty(queue1))
         {
                 queue_pop(queue1);
-                // printf("%lu",check_queue_size(queue1));
+                // printf("%lu",queue_size(queue1));
         }
 
         free_queue(queue1);
@@ -81,13 +94,13 @@ void queue_stress_test1()
 
 void queue_stress_test2()
 {
-        void *queue1=NULL;
-        void *queue2=NULL;
+        queue_t *queue1=NULL;
+        queue_t *queue2=NULL;
         uint16_t data1 =0;
         uint16_t data2 =0; 
 
-        create_queue(&queue1,sizeof(uint16_t),5);
-        create_queue(&queue2,sizeof(uint16_t),5);
+        queue1 = create_queue(sizeof(uint16_t), 5);
+        queue2 = create_queue(sizeof(uint16_t), 5);
 
         uint64_t n = 4000000;
         // uint64_t n = 4000000;
@@ -102,10 +115,10 @@ void queue_stress_test2()
                 queue_push(queue2, (void*) &data2);
                 n--;        
         }
-        while(!check_queue_is_empty(queue1))
+        while(!queue_is_empty(queue1))
         {
                 queue_pop(queue1);
-                // printf("%lu",check_queue_size(queue1));
+                // printf("%lu",queue_size(queue1));
         }
 
         free_queue(queue1);
@@ -116,10 +129,10 @@ void queue_stress_test2()
 /* Array of queues test */
 void queue_stress_test3()
 {
-        void **queues=NULL;
+        queue_t **queues=NULL;
         
         uint64_t num_of_queues = 20000;
-        queues = (void **) malloc(num_of_queues* sizeof(void *));
+        queues = (queue_t **) malloc(num_of_queues* sizeof(queue_t *));
         if(queues == NULL)
         {
                 perror("");
@@ -129,7 +142,7 @@ void queue_stress_test3()
 
         for(uint64_t i=0;i<num_of_queues;i++)
         {
-                create_queue(&(queues[i]),sizeof(uint16_t),2);
+                queues[i] = create_queue(sizeof(uint16_t), 2);
                 
                 queue_push(queues[i], (void*) &data1);
                 queue_push(queues[i], (void*) &data1);
@@ -138,16 +151,17 @@ void queue_stress_test3()
         for(uint64_t i=0;i<num_of_queues;i++)
         {
 
-                while(!check_queue_is_empty(queues[i]))
+                while(!queue_is_empty(queues[i]))
                 {
-                if(NULL != check_queue_front(queues[i]))
-                {
-                        printf("%u ",*((uint16_t*)check_queue_front(queues[i])));
-                }
+                        uint16_t data1=0;
+                        if(queue_front(queues[i], (void*) &data1))
+                        {
+                                printf("%u ",data1);
+                        }
 
-                queue_pop(queues[i]);
+                        queue_pop(queues[i]);
                 
-                // printf("%lu",check_queue_size(queue1));
+                        // printf("%lu",check_queue_size(queue1));
                 }
         }
 
@@ -162,11 +176,11 @@ void queue_stress_test3()
 /* Random Operations test*/
 void queue_stress_test4()
 {
-        void *queue1=NULL;
+        queue_t *queue1=NULL;
         uint16_t data1=0; 
         srand(time(NULL));                      
        
-        create_queue(&queue1,sizeof(uint16_t),100);
+        queue1 = create_queue(sizeof(uint16_t), 100);
 
         // uint64_t n = 400000000;
         uint64_t operations = 400000;
@@ -184,22 +198,28 @@ void queue_stress_test4()
                         queue_pop(queue1);
                         break; 
                 case 2:                                         // check_queue_front
-                       if(NULL != check_queue_front(queue1))
+                {
+                        uint16_t front_value = 0;
+                        if(queue_front(queue1, (void*) &front_value))
                         {
-                                printf("queue front: %u\n",*((uint16_t*)check_queue_front(queue1)));
+                                printf("queue front: %u\n",front_value);
                         }
+                }
                         break; 
-                case 3:
-                        if(NULL != check_queue_back(queue1))
+                case 3:                                        // check_queue_back
+                {
+                        uint16_t back_value = 0;
+                        if(queue_back(queue1, (void*) &back_value))
                         {
-                                printf("queue back: %u\n",*((uint16_t*)check_queue_back(queue1)));
+                                printf("queue back: %u\n",back_value);
                         }
+                }
                         break; 
                 case 4:                                         // check_queue_is_empty
-                        printf("queue empty?: %u\n",check_queue_is_empty(queue1));
+                        printf("queue empty?: %u\n",queue_is_empty(queue1));
                         break; 
                 case 5:                                         // check_queue_size
-                        printf("queue size: %lu\n",check_queue_size(queue1));
+                        printf("queue size: %lu\n",queue_size(queue1));
                         break; 
                 default:
                         break;
@@ -219,8 +239,9 @@ void queue_stress_test4()
 
 void tutorial()
 {
-        void *queue1 = NULL;
-        create_queue(&queue1, sizeof(uint16_t),5);                              // create a queue of 5 elements of uint16_t size
+        queue_t *queue1 = NULL;
+        
+        queue1 = create_queue(sizeof(uint16_t),5);                              // create a queue of 5 elements of uint16_t size
 
         uint16_t data1 = 3;
         queue_push(queue1,(void*) &data1);                                      // Push a value onto the queue
@@ -228,21 +249,27 @@ void tutorial()
         data1 = 20;
         queue_push(queue1,(void*) &data1);                                  // Push another value onto the queue
 
-        if(!check_queue_is_empty(queue1))                                       // Checks if queue is not empty 
+        if(!queue_is_empty(queue1))                                       // Checks if queue is not empty 
         {
-                printf("%u\n",*((uint16_t*)check_queue_front(queue1)));         // prints top of queue
+                uint16_t front_value = 0;
+                if(queue_front(queue1, (void*) &front_value))          // gets the value at the front of the queue
+                {
+                        printf("%u\n", front_value);                           // prints the value at the front of the queue
+                }
         }
 
-        if(!check_queue_is_empty(queue1))                                       // Checks if queue is not empty 
+        if(!queue_is_empty(queue1))                                       // Checks if queue is not empty 
         {
-                printf("%u\n",*((uint16_t*)check_queue_back(queue1)));         // prints top of queue
+                uint16_t back_value = 0;
+                if(queue_back(queue1, (void*) &back_value))         // gets the value at the back of the queue
+                {
+                        printf("%u\n", back_value);                           // prints the value at the back of the queue
+                }
         }
-
 
         queue_pop(queue1);                                                      // Pops a value from the queue
 
-        printf("%lu\n",check_queue_size(queue1));                               // prints size of the queue
-
+        printf("%lu\n",queue_size(queue1));                               // prints size of the queue
         free_queue(queue1);                                                     // frees the queue
 
         return ;
@@ -254,13 +281,15 @@ void tutorial()
 
 int main()
 {
+        tutorial();
+
+        //single_queue_simple_test();
 
         // queue_stress_test1();
         // queue_stress_test2();
         // queue_stress_test3();
         // queue_stress_test4();
-        tutorial();
-        // single_queue_simple_test();
+       
         
         return 0;  
 }
