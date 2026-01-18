@@ -12,6 +12,7 @@
 * Date          Author          Change Id       Release         Description Of Change                   
 * ----------    --------------- ---------       -------         -----------------------------------     
 * 06-02-2025    Tiago Rodrigues                       1         File preparation     
+* 18-01-2026    Tiago Rodrigues                       2         Changed functions for opaqueness
 *                                                                                                      
 *******************************************************************************************************/
 #ifndef PRIORITY_QUEUE_H
@@ -33,6 +34,7 @@ extern "C" {
 /* 1 includes */
 /*****************************************************/
 #include <stdint.h>
+#include "types.h"
 
 /*****************************************************/
 
@@ -48,6 +50,8 @@ extern "C" {
 
 /* 4 typedefs */
 /*****************************************************/
+typedef struct priority_queue priority_queue_t;
+
 
 /*****************************************************/
 
@@ -72,18 +76,16 @@ extern "C" {
 *
 * ARGUMENT 	                TYPE	        I/O	DESCRIPTION
 * --------                      ----            ---     ------------
-* id_of_priority_queue	        void**	        I/O	pointer to the memory position of the priority queue to implement
-* size_of_datatype              uint64_t        I       byte size of datatype to place in the priority queue
-* elements_to_allocate          uint64_t        I       number of elements to allocate for the priority queue
-* type_of_priority_queue        uint8_t         I       priority order of the priority queue
+* size_of_datatype              size_t          I       byte size of datatype to place in the priority queue
+* elements_to_allocate          size_t          I       number of elements to allocate for the priority queue
 * compare_func                  function        I       function to compare two values in the priority queue
 *
-* RETURNS: void 
+* RETURNS: priority_queue_t* 
 *
 *
 *
 *****************************************************************/
-void create_priority_queue(void** id_of_priority_queue, uint64_t size_of_datatype, uint64_t elements_to_allocate, uint8_t type_of_priority_queue, int8_t (*compare_func)(void* val1, void* val2));
+priority_queue_t* create_priority_queue(size_t size_of_datatype, size_t elements_to_allocate, bool (*compare_func)(void* val1, void* val2));
 
 
 /******************************************************************
@@ -94,18 +96,18 @@ void create_priority_queue(void** id_of_priority_queue, uint64_t size_of_datatyp
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_priority_queue  void*	        I	pointer to the memory position of the priority queue to which the element is being push to
-* data_to_push          void*	        I	pointer to the memory position of the data to push into the priority queue
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_priority_queue  priority_queue_t*	I	pointer to the memory position of the priority queue to which the element is being push to
+* data_to_push          const void*	        I	pointer to the memory position of the data to push into the priority queue
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void priority_queue_push(void* id_of_priority_queue, void* data_to_push);
+bool priority_queue_push(priority_queue_t* id_of_priority_queue,const void* data_to_push);
 
 
 /******************************************************************
@@ -118,14 +120,14 @@ void priority_queue_push(void* id_of_priority_queue, void* data_to_push);
 *
 * ARGUMENT              TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_priority_queue  void*	        I	pointer to the memory position of the queue to pop from
+* id_of_priority_queue  priority_queue_t*	I	pointer to the memory position of the queue to pop from
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void priority_queue_pop(void* id_of_priority_queue);
+bool priority_queue_pop(priority_queue_t* id_of_priority_queue);
 
 
 /******************************************************************
@@ -136,58 +138,59 @@ void priority_queue_pop(void* id_of_priority_queue);
 *
 * ARGUMENTS:
 *
-* ARGUMENT              TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_priority_queue  void*	        I	pointer to the memory position of the priority queue to check
+* ARGUMENT              TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_priority_queue  const priority_queue_t*	I	pointer to the memory position of the priority queue to check
+* data_at_top           void*	                O	pointer to the memory position of the data at the top of the priority queue
 *
 *
-* RETURNS: 
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void* check_priority_queue_top(void* id_of_priority_queue);
+bool priority_queue_top(const priority_queue_t* id_of_priority_queue, void* data_at_top);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_priority_queue_is_empty
+* FUNCTION NAME: priority_queue_is_empty
 *
 * PURPOSE: Checks if the priority queue is empty or not
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_priority_queue  void*	        I	pointer to the memory position of the priority queue to check
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_priority_queue  const priority_queue_t*	I	pointer to the memory position of the priority queue to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_priority_queue_is_empty(void* id_of_priority_queue);
+bool priority_queue_is_empty(const priority_queue_t* id_of_priority_queue);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_priority_queue_size
+* FUNCTION NAME: priority_queue_size
 *
 * PURPOSE: Will return the current element count in the queue
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_priority_queue  void*	        I	pointer to the memory position of the priority queue to check
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_priority_queue  const priority_queue_t*	I	pointer to the memory position of the priority queue to check
 *
-* RETURNS: uint64_t
+* RETURNS: size_t
 *
 *
 *
 *****************************************************************/
-uint64_t check_priority_queue_size(void* id_of_priority_queue);
+size_t priority_queue_size(const priority_queue_t* id_of_priority_queue);
 
 
 /******************************************************************
@@ -198,9 +201,9 @@ uint64_t check_priority_queue_size(void* id_of_priority_queue);
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_priority_queue  void*	        I	pointer to the memory position of the priority queue to free
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_priority_queue  priority_queue_t*	I	pointer to the memory position of the priority queue to free
 *
 *
 * RETURNS: void
@@ -208,7 +211,7 @@ uint64_t check_priority_queue_size(void* id_of_priority_queue);
 *
 *
 *****************************************************************/
-void free_priority_queue(void* id_of_priority_queue);
+void free_priority_queue(priority_queue_t* id_of_priority_queue);
 
 
 

@@ -5,52 +5,88 @@
 #include <stdlib.h>
 #include <time.h>
 // #include <errno.h>
+#include "types.h"
 
 
-int8_t compare_uint16_t_func(void* val1, void* val2)
+bool compare_uint16_t_func(void* val1, void* val2)
 {
         uint16_t val1_int = *((uint16_t*)val1);
         uint16_t val2_int = *((uint16_t*)val2);
 
-        if(val1_int<val2_int)
-                return -1;
-        else if(val1_int == val2_int)
-                return 0;
+        if(val1_int < val2_int)
+                return false;
         else
-                return 1;
+                return true;
 }
+
 
 
 void single_priority_queue_simple_test()
 {
-        void *priority_queue = NULL;
+        priority_queue_t *priority_queue = NULL;
 
-        create_priority_queue(&priority_queue, sizeof(uint16_t),20, 0, compare_uint16_t_func);
+        priority_queue = create_priority_queue(sizeof(uint16_t),20, compare_uint16_t_func);
 
-        printf("%u\n",check_priority_queue_is_empty(priority_queue));
-        printf("%u\n",check_priority_queue_size(priority_queue));
+
+        printf("%u\n",priority_queue_is_empty(priority_queue));
+        printf("%u\n",priority_queue_size(priority_queue));
 
 
         uint16_t value1 = 30;
         priority_queue_push(priority_queue, (void *)&value1);
+
         value1 = 10;
         priority_queue_push(priority_queue, (void *)&value1);
+
         value1 = 20;
         priority_queue_push(priority_queue, (void *)&value1);
+
         value1 = 20000;
         priority_queue_push(priority_queue, (void *)&value1);
+
         value1 = 8;
         priority_queue_push(priority_queue, (void *)&value1);
 
-        printf("%u\n",check_priority_queue_is_empty(priority_queue));
-        printf("%u\n",check_priority_queue_size(priority_queue));
 
-        printf("%u\n", *((uint16_t*)check_priority_queue_top(priority_queue)));
+        uint16_t value_top = 0;
+
+        if(priority_queue_top(priority_queue, (void *)&value_top))
+        {
+                printf("Value at top: %u\n", value_top);
+        }
         priority_queue_pop(priority_queue);
-        printf("%u\n", *((uint16_t*)check_priority_queue_top(priority_queue)));
+
+        if(priority_queue_top(priority_queue, (void *)&value_top))
+        {
+                printf("Value at top: %u\n", value_top);
+        }
         priority_queue_pop(priority_queue);
-        printf("%u\n", *((uint16_t*)check_priority_queue_top(priority_queue)));
+
+        if(priority_queue_top(priority_queue, (void *)&value_top))
+        {
+                printf("Value at top: %u\n", value_top);
+        }
         priority_queue_pop(priority_queue);
+
+        if(priority_queue_top(priority_queue, (void *)&value_top))
+        {
+                printf("Value at top: %u\n", value_top);
+        }
+        priority_queue_pop(priority_queue);
+
+        if(priority_queue_top(priority_queue, (void *)&value_top))
+        {
+                printf("Value at top: %u\n", value_top);
+        }
+        priority_queue_pop(priority_queue);        
+
+        
+
+        printf("%u\n",priority_queue_is_empty(priority_queue));
+        printf("%u\n",priority_queue_size(priority_queue));
+
+        priority_queue_pop(priority_queue);
+       
 
         free_priority_queue(priority_queue);
 
