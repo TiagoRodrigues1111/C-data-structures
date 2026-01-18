@@ -41,6 +41,7 @@
 * Date          Author                  Change Id       Release         Description Of Change                   
 * ----------    ---------------         ---------       -------         ---------------------   
 * 04-06-2025    Tiago Rodrigues                         1               File preparation
+* 18-01-2026    Tiago Rodrigues                         2               Changed functions for opaqueness      
 *
 *
 * ALGORITHM (PDL)
@@ -78,7 +79,7 @@
 /* 1.4 other libraries' headers*/
 
 /* 1.5 project's headers */
-
+#include "types.h"
 
 
 
@@ -131,14 +132,14 @@ struct bucket
 
 struct set
 {
-        uint64_t set_size;
-        uint64_t set_size_allocated;                    // num_of_elements
-        uint64_t datatype_size;                         // num_of_bytes
-        uint64_t k_aux;                                 // auxiliary 4 bytes for reallocation      
+        size_t set_size;
+        size_t set_size_allocated;                    // num_of_elements
+        size_t datatype_size;                         // num_of_bytes
+        size_t k_aux;                                 // auxiliary 4 bytes for reallocation      
         // uint64_t load_factor;                        // could give the user the ability to choose his load factor                                       
         struct bucket **set_data_buckets;
-        int8_t (*compare_func)(void* val1, void* val2);
-        uint64_t (*hash_function)(void* val);
+        bool (*compare_func)(const void* val1, const void* val2);
+        size_t (*hash_function)(const void* val);
 };
 
 
@@ -150,7 +151,7 @@ struct set
 
 // uint64_t hash_function(void* data);
 
-void resize_set(void* id_of_set);
+void resize_set(set_t* id_of_set);
 
 /*****************************************************/
 
@@ -171,66 +172,61 @@ void resize_set(void* id_of_set);
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_set	        void**	        I/O	pointer to the memory position of the set to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the set
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the set
+* size_of_datatype      size_t          I       byte size of datatype to place in the set
+* elements_to_allocate  size_t          I       number of elements to allocate for the set
 * compare_func          function        I       function to compare presence of element in the set
 * hash_function         function        I       hash function to be used to determine indexes
 *
-* RETURNS: void
+* RETURNS: set_t*
 *
 *
 *
 *****************************************************************/
-void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val))
+set_t* create_set(size_t size_of_datatype, size_t elements_to_allocate, bool (*compare_func)(const void* val1, const void* val2),size_t (*hash_function)(const void* val))
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
-        *  i            uint64_t        Simple increment variable
+        *  i            size_t          Simple increment variable
         * 
         */
-        if(NULL == id_of_set)
-        {
-                fprintf(stderr, "Set pointer location is null\n");
-                return ;
-        }
-                
+
+        set_t* id_of_set = NULL;
 
         // Allocation of a priority_queue struct
-        (*id_of_set) = malloc(1*sizeof(struct set));                       
-        if(NULL == *id_of_set)
+        id_of_set = malloc(1*sizeof(struct set));                       
+        if(NULL == id_of_set)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
 
         if(0 == elements_to_allocate)
-                ((struct set*)(*id_of_set))->set_size_allocated = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
+                id_of_set->set_size_allocated = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
         else
-                ((struct set*)(*id_of_set))->set_size_allocated = elements_to_allocate;
+                id_of_set->set_size_allocated = elements_to_allocate;
 
-        ((struct set*)(*id_of_set))->set_size = 0;
-        ((struct set*)(*id_of_set))->datatype_size = size_of_datatype;
-        ((struct set*)(*id_of_set))->k_aux = 1;
-        ((struct set*)(*id_of_set))->compare_func = compare_func;
-        ((struct set*)(*id_of_set))->hash_function = hash_function;
+        id_of_set->set_size = 0;
+        id_of_set->datatype_size = size_of_datatype;
+        id_of_set->k_aux = 1;
+        id_of_set->compare_func = compare_func;
+        id_of_set->hash_function = hash_function;
 
         // Allocate space in the priority_queue for the array of values
-        ((struct set*)(*id_of_set))->set_data_buckets = (struct bucket**) malloc(((struct set*)(*id_of_set))->set_size_allocated*sizeof(struct bucket*));     
-        if(NULL == ((struct set*)(*id_of_set))->set_data_buckets)
+        id_of_set->set_data_buckets = (struct bucket**) malloc(id_of_set->set_size_allocated*sizeof(struct bucket*));     
+        if(NULL == id_of_set->set_data_buckets)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
-        for(uint64_t i = 0; i < ((struct set*)(*id_of_set))->set_size_allocated; i++)
+        for(size_t i = 0; i < id_of_set->set_size_allocated; i++)
         {
-                ((struct set*)(*id_of_set))->set_data_buckets[i] = NULL;
+                id_of_set->set_data_buckets[i] = NULL;
         }
 
 
         
-        return ;        
+        return id_of_set;        
 }
 
 /******************************************************************
@@ -243,28 +239,28 @@ void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_t
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_set             void*	        I	pointer to the memory position of the set to insert into
-* data_to_insert        void*	        I	pointer to the memory position of the data to insert into the set
+* id_of_set             set_t*	        I	pointer to the set to insert into
+* data_to_insert        const void*	I	pointer to the memory position of the data to insert into the set
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void set_insert(void* id_of_set, void* data_to_insert)
+bool set_insert(set_t* id_of_set, const void* data_to_insert)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
-        *  idx          uint64_t        index of the bucket to add the new element
+        *  idx          size_t          index of the bucket to add the new element
         *  new_entry    struct bucket*  helps allocate the memory to the new data to insert   
         */
 
         if (1 == set_contains(id_of_set, data_to_insert)) 
-                return ; 
+                return false; 
 
-        uint64_t idx = ((struct set*)(id_of_set))->hash_function(data_to_insert) % ((struct set*)(id_of_set))->set_size_allocated;
+        size_t idx = id_of_set->hash_function(data_to_insert) % id_of_set->set_size_allocated;
         
         struct bucket *new_entry = NULL;
 
@@ -272,27 +268,27 @@ void set_insert(void* id_of_set, void* data_to_insert)
         if(NULL == new_entry)
         {
                 perror("Memory allocation failed");
-                return ;
+                return false;
         }
 
 
-        new_entry->data = malloc(1*((struct set*)(id_of_set))->datatype_size);
+        new_entry->data = malloc(1*(id_of_set->datatype_size));
         if(NULL == new_entry->data)
         {
                 perror("Memory allocation failed");
-                return ;
+                return false;
         }
-        memcpy(new_entry->data, data_to_insert,((struct set*)(id_of_set))->datatype_size);       
-        new_entry->next = (((struct set*)(id_of_set))->set_data_buckets[idx]);
+        memcpy(new_entry->data, data_to_insert, id_of_set->datatype_size);       
+        new_entry->next = (id_of_set->set_data_buckets[idx]);
        
     
         
-        (((struct set*)(id_of_set))->set_data_buckets[idx]) = new_entry;
-        ((struct set*)(id_of_set))->set_size++;
+        (id_of_set->set_data_buckets[idx]) = new_entry;
+        (id_of_set->set_size++);
 
         resize_set(id_of_set);
 
-        return ;
+        return true;
 }
 
 /******************************************************************
@@ -305,49 +301,49 @@ void set_insert(void* id_of_set, void* data_to_insert)
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_set             void*	        I	pointer to the memory position of the set to erase from
-* element_to_erase      void*	        I	pointer to the memory position of the element to erase from the set
+* id_of_set             set_t*	        I	pointer to the set to erase from
+* element_to_erase      const void*	I	pointer to the memory position of the element to erase from the set
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void set_erase(void* id_of_set, void* element_to_erase)
+bool set_erase(set_t* id_of_set, const void* element_to_erase)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
-        *  idx          uint64_t        index of the bucket to add the new element
+        *  idx          size_t          index of the bucket to add the new element
         *  element      struct bucket*  pointer to the bucket
         *  prev         struct bucket*  auxiliary pointer to the previous bucket in the bucket linked list
         */
 
-        uint64_t idx = ((struct set*)(id_of_set))->hash_function(element_to_erase) % ((struct set*)(id_of_set))->set_size_allocated;
+        size_t idx = id_of_set->hash_function(element_to_erase) % id_of_set->set_size_allocated;
 
-        struct bucket *element = ((struct set*)(id_of_set))->set_data_buckets[idx];
+        struct bucket *element = id_of_set->set_data_buckets[idx];
         struct bucket *prev = NULL;
 
         while (element) 
         {
-            if (0 == ((struct set*)(id_of_set))->compare_func(element->data, element_to_erase)) 
+            if (true == id_of_set->compare_func(element->data, element_to_erase)) 
             {
                 if (NULL != prev) 
                         prev->next = element->next;
                 else 
-                        ((struct set*)(id_of_set))->set_data_buckets[idx] = element->next;
+                        id_of_set->set_data_buckets[idx] = element->next;
                 
                 free(element->data);
                 free(element);
-                ((struct set*)(id_of_set))->set_size--;
-                return ;
+                id_of_set->set_size--;
+                return true;
             }
             prev = element;
             element = element->next;
         }
 
-        return ;
+        return false;
 }
 
 /******************************************************************
@@ -360,55 +356,55 @@ void set_erase(void* id_of_set, void* element_to_erase)
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_set             void*	        I	pointer to the memory position of the set
-* element_to_check      void*	        I	pointer to the memory position of the element to check if exists
+* id_of_set             set_t*	        I	pointer to the set
+* element_to_check      const void*	I	pointer to the memory position of the element to check if exists
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t set_contains(void* id_of_set, void* element_to_check)
+bool set_contains(set_t* id_of_set, const void* element_to_check)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
-        *  idx          uint64_t        index of the bucket to add the new element
+        *  idx          size_t          index of the bucket to add the new element
         *  bucket_aux   struct bucket*  pointer to the bucket
         *
         */
 
-        uint64_t idx = ((struct set*)(id_of_set))->hash_function(element_to_check) % ((struct set*)(id_of_set))->set_size_allocated;
-        struct bucket *bucket_aux = (((struct set*)(id_of_set))->set_data_buckets[idx]);
-        
+        size_t idx = id_of_set->hash_function(element_to_check) % id_of_set->set_size_allocated;
+        struct bucket *bucket_aux = id_of_set->set_data_buckets[idx];
+
         while (NULL != bucket_aux) {
-            if (0 == ((struct set*)(id_of_set))->compare_func(bucket_aux->data, element_to_check)) 
-                return 1;
+            if (true == id_of_set->compare_func(bucket_aux->data, element_to_check)) 
+                return true;
             bucket_aux = bucket_aux->next;
         }
-        return 0;
+        return false;
 }
 
 /******************************************************************
 *
-* FUNCTION NAME: check_set_is_empty
+* FUNCTION NAME: set_is_empty
 *
 * PURPOSE: Checks if the set is empty or not
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* --------	-------------	---	--------------------------
-* id_of_set     void*	        I	pointer to the memory position of the set to check
+* --------      -------------	---	--------------------------
+* id_of_set     set_t*	        I	pointer to the set to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_set_is_empty(void* id_of_set)
+bool set_is_empty(set_t* id_of_set)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -418,34 +414,34 @@ uint8_t check_set_is_empty(void* id_of_set)
         if(NULL == id_of_set)
         {
                 fprintf(stderr, "set pointer location is null\n");
-                return 0;
+                return false;
         }
-                
-        if(0 == ((struct set*)id_of_set)->set_size)
-                return 1;
+
+        if(0 == id_of_set->set_size)
+                return true;
         else
-                return 0;
+                return false;
 }
 
 /******************************************************************
 *
-* FUNCTION NAME: check_set_size
+* FUNCTION NAME: set_size
 *
-* PURPOSE: Returns the current element count in the set
+* PURPOSE: Will return the current element count in the set
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_set     void*	        I	pointer to the memory position of the set to check
+* id_of_set     set_t*	        I	pointer to the set to check
 *
 *
-* RETURNS: uint64_t (size of the set)
+* RETURNS: size_t (size of the set)
 *
 *
 *
 *****************************************************************/
-uint64_t check_set_size(void* id_of_set)
+size_t set_size(set_t* id_of_set)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -458,7 +454,7 @@ uint64_t check_set_size(void* id_of_set)
                 return 0;
         }
 
-        return ((struct set*)id_of_set)->set_size;
+        return id_of_set->set_size;
 }
 
 /******************************************************************
@@ -471,7 +467,7 @@ uint64_t check_set_size(void* id_of_set)
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_set     void*	        I	pointer to the memory position of the set to free
+* id_of_set     set_t*	        I	pointer to the set to free
 *
 *
 * RETURNS: void
@@ -479,12 +475,12 @@ uint64_t check_set_size(void* id_of_set)
 *
 *
 *****************************************************************/
-void free_set(void* id_of_set)
+void free_set(set_t* id_of_set)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
         *  --------     ----            -----------
-        *  i            uint64_t        Simple increment variable
+        *  i            size_t        Simple increment variable
         *  aux          struct bucket*  auxiliary pointer to current bucket being freed
         *  aux_next     struct bucket*  auxiliary pointer to next bucket
         */
@@ -492,9 +488,9 @@ void free_set(void* id_of_set)
                 return;
 
 
-        for(int i=0;i<((struct set*)id_of_set)->set_size_allocated;i++)
+        for(size_t i=0;i<id_of_set->set_size_allocated;i++)
         {
-                struct bucket *aux = ((struct set*)id_of_set)->set_data_buckets[i];
+                struct bucket *aux = id_of_set->set_data_buckets[i];
                 while(NULL != aux)
                 {
                         struct bucket *aux_next = aux->next;
@@ -564,7 +560,7 @@ void free_set(void* id_of_set)
 *
 *
 *****************************************************************/
-void resize_set(void* id_of_set) 
+void resize_set(set_t* id_of_set) 
 {
         /* LOCAL VARIABLES:
         *  Variable             Type            Description
@@ -576,7 +572,7 @@ void resize_set(void* id_of_set)
         *  next                 struct bucket*  pointer to the next bucket to element
         *  idx                  uint64_t        index of the bucket in the new memory position to place the bucket
         */
-        if ((float)((struct set*)(id_of_set))->set_size/((struct set*)(id_of_set))->set_size_allocated < LOAD_FACTOR) 
+        if ((float)id_of_set->set_size/id_of_set->set_size_allocated < LOAD_FACTOR) 
                 return ;
 
 
@@ -586,12 +582,12 @@ void resize_set(void* id_of_set)
         uint64_t new_size = 0;
 
         // tries to allocate double the size of the current stack;
-        if(1 == ((struct set*)(id_of_set))->k_aux)
+        if(1 == id_of_set->k_aux)
         {
-                set_bucket_aux = (struct bucket**) malloc((((struct set*)(id_of_set))->set_size_allocated + ((struct set*)(id_of_set))->set_size_allocated)*(sizeof(struct bucket*)));                 
+                set_bucket_aux = (struct bucket**) malloc((id_of_set->set_size_allocated + id_of_set->set_size_allocated)*(sizeof(struct bucket*)));                 
                 if(NULL != set_bucket_aux)                   // this is not needed, and could be placed after the while, however the shift left is a bit faster than the addition
                 {
-                        new_size = ((struct set*)(id_of_set))->set_size_allocated << 1;                        
+                        new_size = id_of_set->set_size_allocated << 1;                        
                 }
         }
         else
@@ -600,19 +596,19 @@ void resize_set(void* id_of_set)
                 {
                         perror("Memory reallocation failed");
                         printf("Attempting smaller reallocation\n");
-                        ((struct set*)(id_of_set))->k_aux<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
+                        id_of_set->k_aux<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
                          
-                        if(0 == (((struct set*)(id_of_set))->set_size_allocated/((struct set*)(id_of_set))->k_aux))
+                        if(0 == (id_of_set->set_size_allocated/id_of_set->k_aux))
                         {
                                 fprintf(stderr, "Impossible to reallocate stack\n");
                                 //perror("Impossible to reallocate stack");
                                 return ;
                         }
            
-                        set_bucket_aux = (struct bucket**) malloc((((struct set*)(id_of_set))->set_size_allocated + (((struct set*)(id_of_set))->set_size_allocated / ((struct set*)(id_of_set))->k_aux))*(sizeof(struct bucket*)));
+                        set_bucket_aux = (struct bucket**) malloc((id_of_set->set_size_allocated + (id_of_set->set_size_allocated / id_of_set->k_aux))*(sizeof(struct bucket*)));
                 }
 
-                new_size = ((struct set*)(id_of_set))->set_size_allocated + (((struct set*)(id_of_set))->set_size_allocated/((struct set*)(id_of_set))->k_aux);          
+                new_size = id_of_set->set_size_allocated + (id_of_set->set_size_allocated/id_of_set->k_aux);          
         }  
         for(uint64_t i = 0; i < new_size; i++)
         {       
@@ -621,16 +617,16 @@ void resize_set(void* id_of_set)
 
 
 
-        for (uint64_t i = 0; i < ((struct set*)(id_of_set))->set_size_allocated; i++) 
+        for (uint64_t i = 0; i < id_of_set->set_size_allocated; i++) 
         {
 
-                struct bucket *element = ((struct set*)(id_of_set))->set_data_buckets[i];
+                struct bucket *element = id_of_set->set_data_buckets[i];
 
                 while (NULL != element) 
                 {
                     struct bucket *next = element->next;
                     
-                    uint64_t idx = ((struct set*)(id_of_set))->hash_function(element->data) % new_size;
+                    uint64_t idx = id_of_set->hash_function(element->data) % new_size;
 
                     element->next = set_bucket_aux[idx];
                     set_bucket_aux[idx] = element;
@@ -640,9 +636,9 @@ void resize_set(void* id_of_set)
 
 
 
-        free(((struct set*)(id_of_set))->set_data_buckets);
-        ((struct set*)(id_of_set))->set_data_buckets = set_bucket_aux;
-        ((struct set*)(id_of_set))->set_size_allocated = new_size;
+        free(id_of_set->set_data_buckets);
+        id_of_set->set_data_buckets = set_bucket_aux;
+        id_of_set->set_size_allocated = new_size;
 
 
         return ;

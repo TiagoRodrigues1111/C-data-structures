@@ -11,6 +11,7 @@
 * Date          Author          Change Id       Release         Description Of Change                   
 * ----------    --------------- ---------       -------         -----------------------------------     
 * 03-06-2025    Tiago Rodrigues                       1         File preparation     
+* 18-01-2026    Tiago Rodrigues                       2         Changed functions for opaqueness        
 *
 *                                                                                                      
 *******************************************************************************************************/
@@ -36,6 +37,8 @@ extern "C" {
 /*****************************************************/
 #include <stdint.h>
 
+#include "types.h"
+
 /*****************************************************/
 
 /* 2 defines */
@@ -50,6 +53,7 @@ extern "C" {
 
 /* 4 typedefs */
 /*****************************************************/
+typedef struct set set_t;
 
 /*****************************************************/
 
@@ -74,18 +78,17 @@ extern "C" {
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_set	        void**	        I/O	pointer to the memory position of the set to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the set
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the set
+* size_of_datatype      size_t          I       byte size of datatype to place in the set
+* elements_to_allocate  size_t          I       number of elements to allocate for the set
 * compare_func          function        I       function to compare presence of element in the set
 * hash_function         function        I       hash function to be used to determine indexes
 *
-* RETURNS: void
+* RETURNS: set_t*
 *
 *
 *
 *****************************************************************/
-void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val));
+set_t* create_set(size_t size_of_datatype, size_t elements_to_allocate, bool (*compare_func)(const void* val1, const void* val2),size_t (*hash_function)(const void* val));
 
 /******************************************************************
 *
@@ -97,16 +100,16 @@ void create_set(void** id_of_set, uint64_t size_of_datatype, uint64_t elements_t
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_set             void*	        I	pointer to the memory position of the set to insert into
-* data_to_insert        void*	        I	pointer to the memory position of the data to insert into the set
+* id_of_set             set_t*	        I	pointer to the set to insert into
+* data_to_insert        const void*	I	pointer to the memory position of the data to insert into the set
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void set_insert(void* id_of_set, void* data_to_insert);
+bool set_insert(set_t* id_of_set, const void* data_to_insert);
 
 /******************************************************************
 *
@@ -118,16 +121,16 @@ void set_insert(void* id_of_set, void* data_to_insert);
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_set             void*	        I	pointer to the memory position of the set to erase from
-* element_to_erase      void*	        I	pointer to the memory position of the element to erase from the set
+* id_of_set             set_t*	        I	pointer to the set to erase from
+* element_to_erase      const void*	I	pointer to the memory position of the element to erase from the set
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void set_erase(void* id_of_set, void* element_to_erase);
+bool set_erase(set_t* id_of_set, const void* element_to_erase);
 
 /******************************************************************
 *
@@ -139,40 +142,40 @@ void set_erase(void* id_of_set, void* element_to_erase);
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_set             void*	        I	pointer to the memory position of the set
-* element_to_check      void*	        I	pointer to the memory position of the element to check if exists
+* id_of_set             set_t*	        I	pointer to the set
+* element_to_check      const void*	I	pointer to the memory position of the element to check if exists
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t set_contains(void* id_of_set, void* element_to_check);
+bool set_contains(set_t* id_of_set, const void* element_to_check);
 
 /******************************************************************
 *
-* FUNCTION NAME: check_set_is_empty
+* FUNCTION NAME: set_is_empty
 *
 * PURPOSE: Checks if the set is empty or not
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* --------	-------------	---	--------------------------
-* id_of_set   void*	        I	pointer to the memory position of the set to check
+* --------      -------------	---	--------------------------
+* id_of_set     set_t*	        I	pointer to the set to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_set_is_empty(void* id_of_set);
+bool set_is_empty(set_t* id_of_set);
 
 /******************************************************************
 *
-* FUNCTION NAME: check_set_size
+* FUNCTION NAME: set_size
 *
 * PURPOSE: Will return the current element count in the set
 *
@@ -180,15 +183,15 @@ uint8_t check_set_is_empty(void* id_of_set);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_set   void*	        I	pointer to the memory position of the set to check
+* id_of_set     set_t*	        I	pointer to the set to check
 *
 *
-* RETURNS: uint64_t (size of the set)
+* RETURNS: size_t (size of the set)
 *
 *
 *
 *****************************************************************/
-uint64_t check_set_size(void* id_of_set);
+size_t set_size(set_t* id_of_set);
 
 
 /******************************************************************
@@ -201,7 +204,7 @@ uint64_t check_set_size(void* id_of_set);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_set     void*	        I	pointer to the memory position of the set to free
+* id_of_set     set_t*	        I	pointer to the set to free
 *
 *
 * RETURNS: void
@@ -209,7 +212,7 @@ uint64_t check_set_size(void* id_of_set);
 *
 *
 *****************************************************************/
-void free_set(void* id_of_set);
+void free_set(set_t* id_of_set);
 
 
 
