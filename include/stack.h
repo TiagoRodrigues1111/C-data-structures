@@ -18,6 +18,10 @@
 * 23-01-2025    Tiago Rodrigues                       1         Changed create stack to allow for number of
 * ----------    --------------- ---------       -------          elements to be sent for allocation
 * 17-01-2026    Tiago Rodrigues                       1         Miniscule changes to spaces and tabs
+* 17-01-2026    Tiago Rodrigues                       2         Changed return type of check_stack_is_empty from
+* ----------    --------------- ---------       -------          uint8_t to bool
+* ----------    --------------- ---------       -------         Changed all uint64_t to size_t for sizes
+* 18-01-2026    Tiago Rodrigues                       2         Changed functions for opaqueness 
 * 
 *
 *******************************************************************************************************/
@@ -39,6 +43,7 @@ extern "C" {
 /* 1 includes */
 /*****************************************************/
 #include <stdint.h>
+/*#include <stddef.h>*/
 #include "types.h"
 
 
@@ -46,6 +51,7 @@ extern "C" {
 
 /* 2 defines */
 /*****************************************************/
+
 
 /*****************************************************/
 
@@ -56,6 +62,7 @@ extern "C" {
 
 /* 4 typedefs */
 /*****************************************************/
+typedef struct stack stack_t;
 
 /*****************************************************/
 
@@ -79,21 +86,21 @@ extern "C" {
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_stack	        void**	        I/O	pointer to the memory position of the stack to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the stack
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the stack
+* size_of_datatype      size_t        I       byte size of datatype to place in the stack
+* elements_to_allocate  size_t        I       number of elements to allocate for the stack
 *
-* RETURNS: void
+* RETURNS: stack_t*
 *
 *
 *
 *****************************************************************/
-void create_stack(void** id_of_stack, uint64_t size_of_datatype, uint64_t elements_to_allocate);
+stack_t* create_stack(size_t size_of_datatype, size_t elements_to_allocate);
+
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_stack_top
+* FUNCTION NAME: stack_top
 *
 * PURPOSE: Returns the memory position of the element that is currently on the top of the stack
 *
@@ -101,15 +108,16 @@ void create_stack(void** id_of_stack, uint64_t size_of_datatype, uint64_t elemen
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------      ----            ---     ------------
-* id_of_stack   void*	        I	pointer to the memory position of the stack to check
+* id_of_stack   const stack_t*	I	pointer to the memory position of the stack to check
+* data_at_top   void*	        O	pointer to the memory position where to copy the data at the top of the stack
 * 
 *
-* RETURNS: void* (pointer to the memory position of the top element of the stack)
+* RETURNS: bool ( true if successful, false otherwise) 
 *
 *
 *
 *****************************************************************/
-void* check_stack_top(void* id_of_stack);
+bool stack_top(const stack_t* id_of_stack, void* data_at_top);
 
 
 /******************************************************************
@@ -122,15 +130,15 @@ void* check_stack_top(void* id_of_stack);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_stack   void*	        I	pointer to the memory position of the stack to pop from
+* id_of_stack   stack_t*	I	pointer to the memory position of the stack to pop from
 *
 *
-* RETURNS: void
+* RETURNS: bool 
 *
 *
 *
 *****************************************************************/
-void stack_pop(void* id_of_stack);
+bool stack_pop(stack_t* id_of_stack);
 
 
 /******************************************************************
@@ -143,21 +151,21 @@ void stack_pop(void* id_of_stack);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_stack   void*	        I	pointer to the memory position of the stack to push to
+* id_of_stack   stack_t*	I	pointer to the memory position of the stack to push to
 * data_to_push  void*	        I	pointer to the memory position of the data to push into the stack
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void stack_push(void* id_of_stack, void* data_to_push);
+bool stack_push(stack_t* id_of_stack, void* data_to_push);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_stack_is_empty
+* FUNCTION NAME: stack_is_empty
 *
 * PURPOSE: Checks if the stack is empty or not
 *
@@ -165,20 +173,20 @@ void stack_push(void* id_of_stack, void* data_to_push);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_stack   void*	        I	pointer to the memory position of the stack to check
+* id_of_stack   const stack_t*	I	pointer to the memory position of the stack to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool ( true or false)
 *
 *
 *
 *****************************************************************/
-bool check_stack_is_empty(void* id_of_stack);
+bool stack_is_empty(const stack_t* id_of_stack);
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_stack_size
+* FUNCTION NAME: stack_size
 *
 * PURPOSE: Will return the current element count in the stack
 *
@@ -186,15 +194,15 @@ bool check_stack_is_empty(void* id_of_stack);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_stack   void*	        I	pointer to the memory position of the stack to check
+* id_of_stack   const stack_t*	I	pointer to the memory position of the stack to check
 *
 *
-* RETURNS: uint64_t (size of the stack)
+* RETURNS: size_t (size of the stack)
 *
 *
 *
 *****************************************************************/
-uint64_t check_stack_size(void* id_of_stack);
+size_t stack_size(const stack_t* id_of_stack);
 
 
 /******************************************************************
@@ -207,7 +215,7 @@ uint64_t check_stack_size(void* id_of_stack);
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
 * --------	-------------	---	--------------------------
-* id_of_stack   void*	        I	pointer to the memory position of the stack to free
+* id_of_stack   stack_t*	I	pointer to the memory position of the stack to free
 *
 *
 * RETURNS: void
@@ -215,7 +223,7 @@ uint64_t check_stack_size(void* id_of_stack);
 *
 *
 *****************************************************************/
-void free_stack(void* id_of_stack);
+void free_stack(stack_t* id_of_stack);
 
 
 
