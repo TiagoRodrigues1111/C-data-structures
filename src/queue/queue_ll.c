@@ -349,7 +349,7 @@ bool queue_pop(queue_t* id_of_queue)
 *
 *
 *****************************************************************/
-bool queue_push(queue_t* id_of_queue, void* data_to_push)
+bool queue_push(queue_t* id_of_queue, const void* data_to_push)
 {
        /* LOCAL VARIABLES:
         *  Variable     Type            Description
