@@ -289,10 +289,12 @@ bool stack_pop(stack_t* id_of_stack)
                 return false;
         }   
         if(false == stack_is_empty(id_of_stack))
+        {
                 id_of_stack->stack_size--;
+                return true;
+        }
 
-
-        return true;
+        return false;
 }
 
 
