@@ -45,7 +45,8 @@
 * Date          Author                  Change Id       Release         Description Of Change                   
 * ----------    ---------------         ---------       -------         ---------------------   
 * 03-02-2025    Tiago Rodrigues                               1         File preparation and functions  
-*                                                                                                               
+* 18-01-2026    Tiago Rodrigues                               2         Changed functions for opaqueness                             
+*                                                                                        
 * ALGORITHM (PDL)
 *    
 *
@@ -101,12 +102,12 @@ struct deque
 {
         int64_t deque_front;                                    //zero is the first position of the data_back
         int64_t deque_back;
-        uint64_t deque_size;    
-        uint64_t deque_size_allocated_front;                    
-        uint64_t deque_size_allocated_back;                                     
-        uint64_t datatype_size;                                 // num_of_bytes
-        uint64_t k_aux_front;                                 // auxiliary 4 bytes for reallocation      
-        uint64_t k_aux_back;                                 // auxiliary 4 bytes for reallocation      
+        size_t deque_size;    
+        size_t deque_size_allocated_front;                    
+        size_t deque_size_allocated_back;                                     
+        size_t datatype_size;                                 // num_of_bytes
+        size_t k_aux_front;                                 // auxiliary 4 bytes for reallocation      
+        size_t k_aux_back;                                 // auxiliary 4 bytes for reallocation      
         void *deque_data_front;
         void *deque_data_back;
 };
@@ -130,99 +131,95 @@ struct deque
 
 /******************************************************************
 *
-* FUNCTION NAME: create_deque       
+* FUNCTION NAME: create_deque
 *
 * PURPOSE: Allocates the needed memory for the deque wanted
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque	        void**	        I/O	pointer to the memory position of the deque to implement
-* size_of_datatype      uint64_t        I       byte size of datatype to place in the deque
-* elements_to_allocate  uint64_t        I       number of elements to allocate for the deque
+* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* --------              ----            ---     ------------
+* size_of_datatype      size_t        I       byte size of datatype to place in the deque
+* elements_to_allocate  size_t        I       number of elements to allocate for the deque
 *
-* RETURNS: void
-*
+* RETURNS: deque_t*
 *
 *
 *****************************************************************/
-void create_deque(void** id_of_deque, uint64_t size_of_datatype, uint64_t elements_to_allocate)
+deque_t* create_deque(size_t size_of_datatype, size_t elements_to_allocate)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
         *  --------        ----    -----------
         *  None
         */
-        if(NULL == id_of_deque)
-        {
-                fprintf(stderr, "Deque pointer location is null\n");
-                return ;
-        }
-                
+
+        deque_t* id_of_deque = NULL;
 
         // Allocation of a deque struct
-        (*id_of_deque) = malloc(1*sizeof(struct deque));                       
-        if(NULL == *id_of_deque)
+        id_of_deque = malloc(1*sizeof(struct deque));                       
+        if(NULL == id_of_deque)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
 
         if(0 == elements_to_allocate)
         {
-                ((struct deque*)(*id_of_deque))->deque_size_allocated_front = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
-                ((struct deque*)(*id_of_deque))->deque_size_allocated_back = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
+                id_of_deque->deque_size_allocated_front = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
+                id_of_deque->deque_size_allocated_back = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
         }
         else
         {
-                ((struct deque*)(*id_of_deque))->deque_size_allocated_front = elements_to_allocate;
-                ((struct deque*)(*id_of_deque))->deque_size_allocated_back = elements_to_allocate;
+                id_of_deque->deque_size_allocated_front = elements_to_allocate;
+                id_of_deque->deque_size_allocated_back = elements_to_allocate;
                 
         }
-        ((struct deque*)(*id_of_deque))->deque_front = 0;
-        ((struct deque*)(*id_of_deque))->deque_back = 0;
-        ((struct deque*)(*id_of_deque))->deque_size = 0;
-        ((struct deque*)(*id_of_deque))->datatype_size = size_of_datatype;
-        ((struct deque*)(*id_of_deque))->k_aux_front = 1;
-        ((struct deque*)(*id_of_deque))->k_aux_back = 1;
+        id_of_deque->deque_front = 0;
+        id_of_deque->deque_back = 0;
+        id_of_deque->deque_size = 0;
+        id_of_deque->datatype_size = size_of_datatype;
+        id_of_deque->k_aux_front = 1;
+        id_of_deque->k_aux_back = 1;
         
         // Allocate space in the deque for the array of values
-        ((struct deque*)(*id_of_deque))->deque_data_front = (void*) malloc(((struct deque*)(*id_of_deque))->deque_size_allocated_front*((struct deque*)(*id_of_deque))->datatype_size);     
-        if(NULL == ((struct deque*)(*id_of_deque))->deque_data_front)
+        id_of_deque->deque_data_front = (void*) malloc(id_of_deque->deque_size_allocated_front*id_of_deque->datatype_size);     
+        if(NULL == id_of_deque->deque_data_front)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
-        ((struct deque*)(*id_of_deque))->deque_data_back = (void*) malloc(((struct deque*)(*id_of_deque))->deque_size_allocated_back*((struct deque*)(*id_of_deque))->datatype_size);     
-        if(NULL == ((struct deque*)(*id_of_deque))->deque_data_back)
+        id_of_deque->deque_data_back = (void*) malloc(id_of_deque->deque_size_allocated_back*id_of_deque->datatype_size);     
+        if(NULL == id_of_deque->deque_data_back)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
 
-        return ;        
+        return id_of_deque;        
 }
 
 
 
 /******************************************************************
 *
-* FUNCTION NAME: check_deque_front
+* FUNCTION NAME: deque_front
 *
 * PURPOSE: Returns the memory position of the element that is currently on the front of the deque
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to check
-* 
+* --------      ----            ---     ------------
+* id_of_deque   const deque_t*	I	pointer to the memory position of the deque to check
+* data_at_front void*	        O	pointer to the memory position of the element at the front of the deque
 *
-* RETURNS: void* (pointer to the memory position of the element at the front of the deque)
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void* check_deque_front(void* id_of_deque)
+bool deque_front(const deque_t* id_of_deque, void* data_at_front)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -232,46 +229,47 @@ void* check_deque_front(void* id_of_deque)
         if(NULL == id_of_deque)
         {
                 fprintf(stderr, "Deque pointer location is null\n");
-                return NULL;
+                return false;
         }
                
 
-        if(check_deque_is_empty(id_of_deque))                       
-                return NULL;
+        if(deque_is_empty(id_of_deque))                       
+                return false;
 
-        if (((struct deque*)id_of_deque)->deque_front <= 0)
+        if (id_of_deque->deque_front <= 0)
         {
-                return (void *) &((uint8_t*)(((struct deque*)id_of_deque)->deque_data_back))[(-(((struct deque*)id_of_deque)->deque_front))*((struct deque*)id_of_deque)->datatype_size];   
+                memcpy(data_at_front, &((uint8_t*)(id_of_deque->deque_data_back))[(-(id_of_deque->deque_front))*id_of_deque->datatype_size], id_of_deque->datatype_size);
+                return true;
         }
         else
         {
-                return (void *) &((uint8_t*)(((struct deque*)id_of_deque)->deque_data_front))[((((struct deque*)id_of_deque)->deque_front)-1)*((struct deque*)id_of_deque)->datatype_size];   
+                memcpy(data_at_front, &((uint8_t*)(id_of_deque->deque_data_front))[((id_of_deque->deque_front)-1)*id_of_deque->datatype_size], id_of_deque->datatype_size);
+                return true;
         }
         
-            
-
+        
 
 
 }
 
 /******************************************************************
 *
-* FUNCTION NAME: check_deque_back    
+* FUNCTION NAME: deque_back    
 *
 * PURPOSE: Returns the memory position of the element that is currently on the back of the deque
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to check
-* 
+* --------      ----            ---     ------------
+* id_of_deque   const deque_t*	I	pointer to the memory position of the deque to check
+* data_at_back  void*	        O	pointer to the memory position of the element at the back of the deque
 *
-* RETURNS: void* (pointer to the memory position of the element at the back of the deque)
-*
+* RETURNS: bool
 *
 *
 *****************************************************************/
-void* check_deque_back(void* id_of_deque)
+bool deque_back(const deque_t* id_of_deque, void* data_at_back)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -281,25 +279,26 @@ void* check_deque_back(void* id_of_deque)
         if(NULL == id_of_deque)
         {
                 fprintf(stderr, "deque pointer location is null\n");
-                return NULL;
+                return false;
         }
                
 
-        if(check_deque_is_empty(id_of_deque))                       
-                return NULL;
+        if(deque_is_empty(id_of_deque))                       
+                return false;
 
 
 
-        if (((struct deque*)id_of_deque)->deque_back >= 0)
+        if (id_of_deque->deque_back >= 0)
         {
-                return (void *) &((uint8_t*)(((struct deque*)id_of_deque)->deque_data_back))[((((struct deque*)id_of_deque)->deque_back))*((struct deque*)id_of_deque)->datatype_size];   
+                memcpy(data_at_back, &((uint8_t*)(id_of_deque->deque_data_back))[((id_of_deque->deque_back))*id_of_deque->datatype_size], id_of_deque->datatype_size);
+                return true;
         }
         else
         {
-                return (void *) &((uint8_t*)(((struct deque*)id_of_deque)->deque_data_front))[(-(((struct deque*)id_of_deque)->deque_back)-1)*((struct deque*)id_of_deque)->datatype_size];   
+                memcpy(data_at_back, &((uint8_t*)(id_of_deque->deque_data_front))[(-((id_of_deque->deque_back)-1))*id_of_deque->datatype_size], id_of_deque->datatype_size);
+                return true;
         }
         
-
 }
 
 
@@ -314,15 +313,15 @@ void* check_deque_back(void* id_of_deque)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to pop from
+* --------      ----            ---     ------------
+* id_of_deque   deque_t*	I	pointer to the memory position of the deque to pop from
 *
 *
-* RETURNS: void
-*
+* RETURNS: bool
 *
 *
 *****************************************************************/
-void deque_pop_front(void* id_of_deque)
+bool deque_pop_front(deque_t* id_of_deque)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -332,15 +331,17 @@ void deque_pop_front(void* id_of_deque)
         if(NULL == id_of_deque)
         {
                 fprintf(stderr, "deque pointer location is null\n");
-                return ;
+                return false;
         }   
-        if(!check_deque_is_empty(id_of_deque))
+        if(!deque_is_empty(id_of_deque))
         {
-                ((struct deque*)id_of_deque)->deque_size--;
-                if(!check_deque_is_empty(id_of_deque))
-                        ((struct deque*)id_of_deque)->deque_front--;                            // TODO: if front is at end of array, front is decremented instead
+                id_of_deque->deque_size--;
+                if(!deque_is_empty(id_of_deque))
+                        id_of_deque->deque_front--;                            // TODO: if front is at end of array, front is decremented instead
+        
+                return true;
         }
-        return;
+        return false;
 }
 
 
@@ -353,15 +354,16 @@ void deque_pop_front(void* id_of_deque)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to pop from
+* --------      ----            ---     ------------
+* id_of_deque   deque_t*	I	pointer to the memory position of the deque to pop from
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void deque_pop_back(void* id_of_deque)
+bool deque_pop_back(deque_t* id_of_deque)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -373,13 +375,15 @@ void deque_pop_back(void* id_of_deque)
                 fprintf(stderr, "deque pointer location is null\n");
                 return ;
         }   
-        if(!check_deque_is_empty(id_of_deque))
+        if(!deque_is_empty(id_of_deque))
         {
-                ((struct deque*)id_of_deque)->deque_size--;
-                if(!check_deque_is_empty(id_of_deque))
-                        ((struct deque*)id_of_deque)->deque_back--;                            // TODO: if front is at end of array, front is decremented instead
+                id_of_deque->deque_size--;
+                if(!deque_is_empty(id_of_deque))
+                        id_of_deque->deque_back--;                            // TODO: if front is at end of array, front is decremented instead
+
+                return true;
         }
-        return;
+        return false;
 }
 
 
@@ -395,16 +399,16 @@ void deque_pop_back(void* id_of_deque)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to which the element is being push to
-* data_to_push  void*	        I	pointer to the memory position of the data to push into the deque
+* --------      ----            ---     ------------
+* id_of_deque   deque_t*	I	pointer to the memory position of the deque to which the element is being push to
+* data_to_push  const void*	I	pointer to the memory position of the data to push into the deque
 *
 *
-* RETURNS: void
-*
+* RETURNS: bool
 *
 *
 *****************************************************************/
-void deque_push_front(void* id_of_deque, void* data_to_push)
+bool deque_push_front(deque_t* id_of_deque, const void* data_to_push)
 {
        /* LOCAL VARIABLES:
         *  Variable     Type    Description
@@ -414,36 +418,36 @@ void deque_push_front(void* id_of_deque, void* data_to_push)
         if(NULL == id_of_deque)
         {
                 fprintf(stderr, "deque pointer location is null\n");
-                return ;
+                return false;
         }
-        if(INT64_MAX == ((struct deque*)id_of_deque)->deque_front)
+        if(INT64_MAX == id_of_deque->deque_front)
         {
                 fprintf(stderr, "deque full, can't add more elements\n");
-                return ;
+                return false;
         }
         if(NULL == data_to_push)
         {
                 fprintf(stderr, "Data pointer is null\n");
-                return ;
+                return false;
         }
 
 
-        if(!check_deque_is_empty(id_of_deque))                                  //caution (left == right will not work, because they are the same for 1 element)
-                 ((struct deque*)id_of_deque)->deque_front++;
+        if(!deque_is_empty(id_of_deque))                                  //caution (left == right will not work, because they are the same for 1 element)
+                id_of_deque->deque_front++;
         
-        ((struct deque*)id_of_deque)->deque_size++;
+        id_of_deque->deque_size++;
        
 
-        if(((struct deque*)id_of_deque)->deque_front > (int64_t)((struct deque*)id_of_deque)->deque_size_allocated_front)               // TODO: better implementation to prevent uncontrollable increase in empty deque space
+        if(id_of_deque->deque_front > (int64_t)id_of_deque->deque_size_allocated_front)               // TODO: better implementation to prevent uncontrollable increase in empty deque space
         {
 
                 void* deque_aux = NULL;
-                if(1 == (((struct deque*)id_of_deque)->k_aux_front))
+                if(1 == (id_of_deque->k_aux_front))
                 {
-                        deque_aux = realloc(((struct deque*)id_of_deque)->deque_data_front, (((struct deque*)id_of_deque)->deque_size_allocated_front + ((struct deque*)id_of_deque)->deque_size_allocated_front)*((struct deque*)id_of_deque)->datatype_size);
+                        deque_aux = realloc(id_of_deque->deque_data_front, (id_of_deque->deque_size_allocated_front + id_of_deque->deque_size_allocated_front)*id_of_deque->datatype_size);
                         if(NULL != deque_aux)                   // this is not needed, and could be placed after the while, however the shift left is a bit faster than the addition
                         {
-                                ((struct deque*)id_of_deque)->deque_size_allocated_front <<= 1;
+                                id_of_deque->deque_size_allocated_front <<= 1;
                         }
                 }
                 else
@@ -452,27 +456,27 @@ void deque_push_front(void* id_of_deque, void* data_to_push)
                         {
                                 perror("Memory reallocation failed");
                                 printf("Attempting smaller reallocation\n");
-                                (((struct deque*)id_of_deque)->k_aux_front)<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
+                                (id_of_deque->k_aux_front)<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
                                  
-                                if(0 == (((struct deque*)id_of_deque)->deque_size_allocated_front/(((struct deque*)id_of_deque)->k_aux_front)))
+                                if(0 == (id_of_deque->deque_size_allocated_front/(id_of_deque->k_aux_front)))
                                 {
                                         fprintf(stderr, "Impossible to reallocate deque\n");
                                         //perror("Impossible to reallocate deque");
                                         return ;
                                 }
-                                deque_aux = realloc(((struct deque*)id_of_deque)->deque_data_front, (((struct deque*)id_of_deque)->deque_size_allocated_front + (((struct deque*)id_of_deque)->deque_size_allocated_front / (((struct deque*)id_of_deque)->k_aux_front)))*((struct deque*)id_of_deque)->datatype_size);
+                                deque_aux = realloc(id_of_deque->deque_data_front, (id_of_deque->deque_size_allocated_front + (id_of_deque->deque_size_allocated_front / (id_of_deque->k_aux_front)))*id_of_deque->datatype_size);
                         }
 
-                        ((struct deque*)id_of_deque)->deque_size_allocated_front += (((struct deque*)id_of_deque)->deque_size_allocated_front/(((struct deque*)id_of_deque)->k_aux_front));          
+                        id_of_deque->deque_size_allocated_front += (id_of_deque->deque_size_allocated_front/(id_of_deque->k_aux_front));          
                 }
                 
-                ((struct deque*)id_of_deque)->deque_data_front = deque_aux;
+                id_of_deque->deque_data_front = deque_aux;
 
         }
 
-        memcpy(check_deque_front(id_of_deque), data_to_push, ((struct deque*)id_of_deque)->datatype_size);
-
-        return ;
+        memcpy(check_deque_front(id_of_deque), data_to_push, id_of_deque->datatype_size);
+        
+        return true;
 
 }
 
@@ -487,16 +491,17 @@ void deque_push_front(void* id_of_deque, void* data_to_push)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to which the element is being push to
-* data_to_push  void*	        I	pointer to the memory position of the data to push into the deque
+* --------      ----            ---     ------------
+* id_of_deque   deque_t*	I	pointer to the memory position of the deque to which the element is being push to
+* data_to_push  const void*	I	pointer to the memory position of the data to push into the deque
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void deque_push_back(void* id_of_deque, void* data_to_push)
+bool deque_push_back(deque_t* id_of_deque, const void* data_to_push)
 {
        /* LOCAL VARIABLES:
         *  Variable     Type    Description
@@ -506,35 +511,34 @@ void deque_push_back(void* id_of_deque, void* data_to_push)
         if(NULL == id_of_deque)
         {
                 fprintf(stderr, "deque pointer location is null\n");
-                return ;
+                return false;
         }
-        if(INT64_MAX == ((struct deque*)id_of_deque)->deque_back)
+        if(INT64_MAX == id_of_deque->deque_back)
         {
                 fprintf(stderr, "deque full, can't add more elements\n");
-                return ;
+                return false;
         }
         if(NULL == data_to_push)
         {
                 fprintf(stderr, "Data pointer is null\n");
-                return ;
+                return false;
         }
 
 
-        if(!check_deque_is_empty(id_of_deque))                                  //caution (left == right will not work, because they are the same for 1 element)
-                 ((struct deque*)id_of_deque)->deque_back++;
+        if(!deque_is_empty(id_of_deque))                                  //caution (left == right will not work, because they are the same for 1 element)
+                 id_of_deque->deque_back++;
         
-        ((struct deque*)id_of_deque)->deque_size++;
-       
+        id_of_deque->deque_size++;
 
-        if(((struct deque*)id_of_deque)->deque_back >= (int64_t)((struct deque*)id_of_deque)->deque_size_allocated_back)               // TODO: better implementation to prevent uncontrollable increase in empty deque space
+        if(id_of_deque->deque_back >= (int64_t)id_of_deque->deque_size_allocated_back)               // TODO: better implementation to prevent uncontrollable increase in empty deque space
         {
                 void* deque_aux = NULL;
-                if(1 == (((struct deque*)id_of_deque)->k_aux_back))
+                if(1 == (id_of_deque->k_aux_back))
                 {
-                        deque_aux = realloc(((struct deque*)id_of_deque)->deque_data_back, (((struct deque*)id_of_deque)->deque_size_allocated_back + ((struct deque*)id_of_deque)->deque_size_allocated_back)*((struct deque*)id_of_deque)->datatype_size);
+                        deque_aux = realloc(id_of_deque->deque_data_back, (id_of_deque->deque_size_allocated_back + id_of_deque->deque_size_allocated_back)*id_of_deque->datatype_size);
                         if(NULL != deque_aux)                   // this is not needed, and could be placed after the while, however the shift left is a bit faster than the addition
                         {
-                                ((struct deque*)id_of_deque)->deque_size_allocated_back <<= 1;
+                                id_of_deque->deque_size_allocated_back <<= 1;
                         }
                 }
                 else
@@ -543,27 +547,26 @@ void deque_push_back(void* id_of_deque, void* data_to_push)
                         {
                                 perror("Memory reallocation failed");
                                 printf("Attempting smaller reallocation\n");
-                                (((struct deque*)id_of_deque)->k_aux_back)<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
+                                (id_of_deque->k_aux_back)<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
                                  
-                                if(0 == (((struct deque*)id_of_deque)->deque_size_allocated_back/(((struct deque*)id_of_deque)->k_aux_back)))
+                                if(0 == (id_of_deque->deque_size_allocated_back/(id_of_deque->k_aux_back)))
                                 {
                                         fprintf(stderr, "Impossible to reallocate deque\n");
                                         //perror("Impossible to reallocate deque");
                                         return ;
                                 }
-                                deque_aux = realloc(((struct deque*)id_of_deque)->deque_data_back, (((struct deque*)id_of_deque)->deque_size_allocated_back + (((struct deque*)id_of_deque)->deque_size_allocated_back / (((struct deque*)id_of_deque)->k_aux_back)))*((struct deque*)id_of_deque)->datatype_size);
+                                deque_aux = realloc(id_of_deque->deque_data_back, (id_of_deque->deque_size_allocated_back + (id_of_deque->deque_size_allocated_back / (id_of_deque->k_aux_back)))*id_of_deque->datatype_size);
                         }
 
-                        ((struct deque*)id_of_deque)->deque_size_allocated_back += (((struct deque*)id_of_deque)->deque_size_allocated_back/(((struct deque*)id_of_deque)->k_aux_back));          
+                        id_of_deque->deque_size_allocated_back += (id_of_deque->deque_size_allocated_back/(id_of_deque->k_aux_back));          
                 }
                 
-                ((struct deque*)id_of_deque)->deque_data_back = deque_aux;
+                id_of_deque->deque_data_back = deque_aux;
 
         }
 
-        memcpy(check_deque_back(id_of_deque), data_to_push, ((struct deque*)id_of_deque)->datatype_size);
-
-        return ;
+        memcpy(check_deque_back(id_of_deque), data_to_push, id_of_deque->datatype_size);
+        return true;
 
 }
 
@@ -573,22 +576,22 @@ void deque_push_back(void* id_of_deque, void* data_to_push)
 
 /******************************************************************
 *
-* FUNCTION NAME: check_deque_is_empty
+* FUNCTION NAME: deque_is_empty
 *
 * PURPOSE: Checks if the deque is empty or not
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to check
+* --------      ----            ---     ------------
+* id_of_deque   const deque_t*	I	pointer to the memory position of the deque to check
 *
 *
-* RETURNS: uint8_t
-*
+* RETURNS: bool
 *
 *
 *****************************************************************/
-uint8_t check_deque_is_empty(void* id_of_deque)
+bool deque_is_empty(const deque_t* id_of_deque)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -601,7 +604,7 @@ uint8_t check_deque_is_empty(void* id_of_deque)
                 return 0;
         }
                 
-        if(0 == ((struct deque*)id_of_deque)->deque_size)
+        if(0 == id_of_deque->deque_size)
                 return 1;
         else
                 return 0;
@@ -612,22 +615,23 @@ uint8_t check_deque_is_empty(void* id_of_deque)
 
 /******************************************************************
 *
-* FUNCTION NAME: check_deque_size
+* FUNCTION NAME: deque_size
 *
 * PURPOSE: Will return the current element count in the deque
 *
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to check
+* --------      ----            ---     ------------
+* id_of_deque   const deque_t*	I	pointer to the memory position of the deque to check
 *
 *
-* RETURNS: uint64_t (size of the deque)
+* RETURNS: size_t (size of the deque)
 *
 *
 *
 *****************************************************************/
-uint64_t check_deque_size(void* id_of_deque)
+size_t deque_size(const deque_t* id_of_deque)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -640,7 +644,7 @@ uint64_t check_deque_size(void* id_of_deque)
                 return 0;
         }
 
-        return ((struct deque*)id_of_deque)->deque_size;
+        return id_of_deque->deque_size;
 
 
 
@@ -655,7 +659,8 @@ uint64_t check_deque_size(void* id_of_deque)
 * ARGUMENTS:
 *
 * ARGUMENT 	TYPE	        I/O	DESCRIPTION
-* id_of_deque   void*	        I	pointer to the memory position of the deque to free
+* --------      ----            ---     ------------
+* id_of_deque   deque_t*	I	pointer to the memory position of the deque to free
 *
 *
 * RETURNS: void
@@ -663,7 +668,7 @@ uint64_t check_deque_size(void* id_of_deque)
 *
 *
 *****************************************************************/
-void free_deque(void* id_of_deque)
+void free_deque(deque_t* id_of_deque)
 {
 
         /* LOCAL VARIABLES:
@@ -674,12 +679,12 @@ void free_deque(void* id_of_deque)
         if(NULL == id_of_deque)
                 return;
 
-        if(NULL != ((struct deque*)id_of_deque)->deque_data_back)
-                free(((struct deque*)id_of_deque)->deque_data_back);
+        if(NULL != id_of_deque->deque_data_back)
+                free(id_of_deque->deque_data_back);
 
 
-        if(NULL != ((struct deque*)id_of_deque)->deque_data_front)
-                free(((struct deque*)id_of_deque)->deque_data_front);
+        if(NULL != id_of_deque->deque_data_front)
+                free(id_of_deque->deque_data_front);
 
         free(id_of_deque);
         return ;
