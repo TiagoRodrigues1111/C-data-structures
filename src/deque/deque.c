@@ -373,7 +373,7 @@ bool deque_pop_back(deque_t* id_of_deque)
         if(NULL == id_of_deque)
         {
                 fprintf(stderr, "deque pointer location is null\n");
-                return ;
+                return false;
         }   
         if(!deque_is_empty(id_of_deque))
         {
@@ -462,7 +462,7 @@ bool deque_push_front(deque_t* id_of_deque, const void* data_to_push)
                                 {
                                         fprintf(stderr, "Impossible to reallocate deque\n");
                                         //perror("Impossible to reallocate deque");
-                                        return ;
+                                        return false;
                                 }
                                 deque_aux = realloc(id_of_deque->deque_data_front, (id_of_deque->deque_size_allocated_front + (id_of_deque->deque_size_allocated_front / (id_of_deque->k_aux_front)))*id_of_deque->datatype_size);
                         }
@@ -474,7 +474,7 @@ bool deque_push_front(deque_t* id_of_deque, const void* data_to_push)
 
         }
 
-        memcpy(check_deque_front(id_of_deque), data_to_push, id_of_deque->datatype_size);
+        memcpy((void *) &((uint8_t*)(id_of_deque->deque_data_front))[(id_of_deque->deque_front)*id_of_deque->datatype_size], data_to_push, id_of_deque->datatype_size);
         
         return true;
 
@@ -553,7 +553,7 @@ bool deque_push_back(deque_t* id_of_deque, const void* data_to_push)
                                 {
                                         fprintf(stderr, "Impossible to reallocate deque\n");
                                         //perror("Impossible to reallocate deque");
-                                        return ;
+                                        return false;
                                 }
                                 deque_aux = realloc(id_of_deque->deque_data_back, (id_of_deque->deque_size_allocated_back + (id_of_deque->deque_size_allocated_back / (id_of_deque->k_aux_back)))*id_of_deque->datatype_size);
                         }
@@ -565,7 +565,7 @@ bool deque_push_back(deque_t* id_of_deque, const void* data_to_push)
 
         }
 
-        memcpy(check_deque_back(id_of_deque), data_to_push, id_of_deque->datatype_size);
+        memcpy((void *) &((uint8_t*)(id_of_deque->deque_data_back))[(id_of_deque->deque_back)*id_of_deque->datatype_size], data_to_push, id_of_deque->datatype_size);
         return true;
 
 }

@@ -599,7 +599,7 @@ void free_hash_map(hash_map_t* id_of_hash_map)
         if(NULL == id_of_hash_map)
                 return;
 
-        for(int i=0;i<id_of_hash_map->hash_map_size_allocated;i++)
+        for(size_t i=0;i<id_of_hash_map->hash_map_size_allocated;i++)
         {
                 struct bucket *aux = id_of_hash_map->hash_map_data_buckets[i];
                 while(NULL != aux)
