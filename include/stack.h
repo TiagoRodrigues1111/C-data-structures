@@ -43,7 +43,7 @@ extern "C" {
 /* 1 includes */
 /*****************************************************/
 #include <stdint.h>
-/*#include <stddef.h>*/
+#include <stddef.h>
 #include "types.h"
 
 
