@@ -4,8 +4,8 @@
 LIB_NAME    := cdatastructures
 LIB_STATIC  := lib$(LIB_NAME).a
 
-CC          := gcc
-AR          := ar
+CC          ?= gcc
+AR          ?= ar
 CFLAGS      := -Wall -Wextra -Wpedantic -std=c11 -O2
 
 PREFIX      ?= /usr/local
