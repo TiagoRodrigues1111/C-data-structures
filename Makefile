@@ -1,33 +1,67 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -g -pedantic -std=c11 -Iinclude
-OBJ = template.o template.o
-TARGET = template_test
+# =========================
+# Project configuration
+# =========================
+LIB_NAME    := cdatastructures
+LIB_STATIC  := lib$(LIB_NAME).a
 
+CC          := gcc
+AR          := ar
+CFLAGS      := -Wall -Wextra -Wpedantic -std=c11 -O2
 
-# Default target
-all: $(TARGET)
+PREFIX      ?= /usr/local
+INCLUDEDIR  := $(PREFIX)/include
+LIBDIR      := $(PREFIX)/lib
+PKGCONFIGDIR:= $(LIBDIR)/pkgconfig
 
-run: $(TARGET)
-	./$(TARGET)
+SRC_DIR     := src
+INC_DIR     := include
+TEST_DIR    := tests
 
+# =========================
+# Source discovery
+# =========================
+SOURCES := $(shell find $(SRC_DIR) -name "*.c")
+OBJECTS := $(SOURCES:.c=.o)
 
+# =========================
+# Build rules
+# =========================
+all: $(LIB_STATIC)
 
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET)
+$(LIB_STATIC): $(OBJECTS)
+	$(AR) rcs $@ $^
 
+%.o: %.c
+	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
-template.o: template.c template.h
-	$(CC) $(CFLAGS) -c template.c
+# =========================
+# Install / uninstall
+# =========================
+install: $(LIB_STATIC)
+	@echo "Installing library..."
+	install -d $(DESTDIR)$(LIBDIR)
+	install -m 644 $(LIB_STATIC) $(DESTDIR)$(LIBDIR)
 
+	@echo "Installing headers..."
+	install -d $(DESTDIR)$(INCLUDEDIR)/cdatastructures
+	install -m 644 $(INC_DIR)/*.h $(DESTDIR)$(INCLUDEDIR)/cdatastructures
 
+	@echo "Installing pkg-config file..."
+	install -d $(DESTDIR)$(PKGCONFIGDIR)
+	install -m 644 cdatastructures.pc $(DESTDIR)$(PKGCONFIGDIR)
 
+uninstall:
+	rm -f $(DESTDIR)$(LIBDIR)/$(LIB_STATIC)
+	rm -rf $(DESTDIR)$(INCLUDEDIR)/cdatastructures
+	rm -f $(DESTDIR)$(PKGCONFIGDIR)/cdatastructures.pc
 
-
-
+# =========================
+# Tests & cleanup
+# =========================
+test:
+	$(MAKE) -C $(TEST_DIR)
 
 clean:
-	rm -f $(OBJ) $(OBJ_ll) $(TARGET)
+	rm -f $(OBJECTS) $(LIB_STATIC)
 
-
-
-rebuild: clean all
+.PHONY: all install uninstall clean test

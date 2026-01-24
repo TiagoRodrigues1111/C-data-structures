@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: c-data-structures
+Description: Generic C data structures library
+Version: 1.0.0
+Libs: -L${libdir} -lcdatastructures
+Cflags: -I${includedir}/cdatastructures
+sudo
