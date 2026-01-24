@@ -41,7 +41,7 @@
 * Date          Author                  Change Id       Release         Description Of Change                   
 * ----------    ---------------         ---------       -------         ---------------------   
 * 09-06-2025    Tiago Rodrigues                         1               File preparation
-*
+* 24-01-2026    Tiago Rodrigues                         2               Changed functions for opaqueness    
 *
 * ALGORITHM (PDL)
 *    
@@ -78,7 +78,7 @@
 /* 1.4 other libraries' headers*/
 
 /* 1.5 project's headers */
-
+#include "types.h"
 
 
 
@@ -132,15 +132,15 @@ struct bucket
 
 struct hash_map
 {
-        uint64_t hash_map_size;
-        uint64_t hash_map_size_allocated;                    // num_of_elements
-        uint64_t key_datatype_size;                         // num_of_bytes
-        uint64_t value_datatype_size;                         // num_of_bytes
-        uint64_t k_aux;                                 // auxiliary 4 bytes for reallocation      
+        size_t hash_map_size;
+        size_t hash_map_size_allocated;                    // num_of_elements
+        size_t key_datatype_size;                         // num_of_bytes
+        size_t value_datatype_size;                         // num_of_bytes
+        size_t k_aux;                                 // auxiliary 4 bytes for reallocation      
         // uint64_t load_factor;                        // could give the user the ability to choose his load factor                                       
         struct bucket **hash_map_data_buckets;
-        int8_t (*compare_func)(void* val1, void* val2);
-        uint64_t (*hash_function)(void* val);
+        bool (*compare_func)(const void* val1,const  void* val2);
+        size_t (*hash_function)(const void* val);
 };
 
 
@@ -152,8 +152,8 @@ struct hash_map
 
 // uint64_t hash_function(void* data);
 
-void resize_hash_map(void* id_of_hash_map);
-void* hash_map_contains_location(void* id_of_hash_map,void* key_to_check);
+void resize_hash_map(hash_map_t* id_of_hash_map);
+void* hash_map_contains_location(hash_map_t* id_of_hash_map,const void* key_to_check);
 
 /*****************************************************/
 
@@ -175,19 +175,18 @@ void* hash_map_contains_location(void* id_of_hash_map,void* key_to_check);
 *
 * ARGUMENT 	                TYPE	        I/O	DESCRIPTION
 * --------                      ----            ---     ------------
-* id_of_hash_map                void**	        I/O	pointer to the memory position of the hash map to implement
-* size_of_key_datatype          uint64_t        I       byte size of key datatype to place in the hash map
-* size_of_value_datatype        uint64_t        I       byte size of value datatype to place in the hash map
-* elements_to_allocate          uint64_t        I       number of elements to allocate for the hash map
+* size_of_key_datatype          size_t          I       byte size of key datatype to place in the hash map
+* size_of_value_datatype        size_t          I       byte size of value datatype to place in the hash map
+* elements_to_allocate          size_t          I       number of elements to allocate for the hash map
 * compare_func                  function        I       function to compare presence of element in the hash map
+* hash_function                 function        I       function to hash the key to place in the hash map
 *
-*
-* RETURNS: void
+* RETURNS: hash_map_t*
 *
 *
 *
 *****************************************************************/
-void create_hash_map(void** id_of_hash_map, uint64_t size_of_key_datatype, uint64_t size_of_value_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val))
+hash_map_t* create_hash_map(size_t size_of_key_datatype, size_t size_of_value_datatype, size_t elements_to_allocate, bool (*compare_func)(const void* val1, const void* val2), size_t (*hash_function)(const void* val))
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -195,48 +194,42 @@ void create_hash_map(void** id_of_hash_map, uint64_t size_of_key_datatype, uint6
         *  i            uint64_t        Simple increment variable
         * 
         */
-        if(NULL == id_of_hash_map)
-        {
-                fprintf(stderr, "Set pointer location is null\n");
-                return ;
-        }
-                
+        hash_map_t* id_of_hash_map = NULL;
 
         // Allocation of a priority_queue struct
-        (*id_of_hash_map) = malloc(1*sizeof(struct hash_map));                       
-        if(NULL == *id_of_hash_map)
+        id_of_hash_map = malloc(1*sizeof(struct hash_map));                       
+        if(NULL == id_of_hash_map)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
 
         if(0 == elements_to_allocate)
-                ((struct hash_map*)(*id_of_hash_map))->hash_map_size_allocated = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
+                id_of_hash_map->hash_map_size_allocated = INITIAL_ALLOC;      // assumed that the number of elements to allocate initially is INITIAL_ALLOC (3 by default)
         else
-                ((struct hash_map*)(*id_of_hash_map))->hash_map_size_allocated = elements_to_allocate;
+                id_of_hash_map->hash_map_size_allocated = elements_to_allocate;
 
-        ((struct hash_map*)(*id_of_hash_map))->hash_map_size = 0;
-        ((struct hash_map*)(*id_of_hash_map))->key_datatype_size = size_of_key_datatype;
-        ((struct hash_map*)(*id_of_hash_map))->value_datatype_size = size_of_value_datatype;
-        ((struct hash_map*)(*id_of_hash_map))->k_aux = 1;
-        ((struct hash_map*)(*id_of_hash_map))->compare_func = compare_func;
-        ((struct hash_map*)(*id_of_hash_map))->hash_function = hash_function;
-
+        id_of_hash_map->hash_map_size = 0;
+        id_of_hash_map->key_datatype_size = size_of_key_datatype;
+        id_of_hash_map->value_datatype_size = size_of_value_datatype;
+        id_of_hash_map->k_aux = 1;
+        id_of_hash_map->compare_func = compare_func;
+        id_of_hash_map->hash_function = hash_function;
         // Allocate space in the priority_queue for the array of values
-        ((struct hash_map*)(*id_of_hash_map))->hash_map_data_buckets = (struct bucket**) malloc(((struct hash_map*)(*id_of_hash_map))->hash_map_size_allocated*sizeof(struct bucket*));     
-        if(NULL == ((struct hash_map*)(*id_of_hash_map))->hash_map_data_buckets)
+        id_of_hash_map->hash_map_data_buckets = (struct bucket**) malloc(id_of_hash_map->hash_map_size_allocated*sizeof(struct bucket*));     
+        if(NULL == id_of_hash_map->hash_map_data_buckets)
         {
                 perror("Memory allocation failed");
-                return ;
+                return NULL;
         }
-        for(uint64_t i = 0; i < ((struct hash_map*)(*id_of_hash_map))->hash_map_size_allocated; i++)
+        for(uint64_t i = 0; i < id_of_hash_map->hash_map_size_allocated; i++)
         {
-                ((struct hash_map*)(*id_of_hash_map))->hash_map_data_buckets[i] = NULL;
+                id_of_hash_map->hash_map_data_buckets[i] = NULL;
         }
 
 
         
-        return ;        
+        return id_of_hash_map;        
 }
 
 /******************************************************************
@@ -249,16 +242,16 @@ void create_hash_map(void** id_of_hash_map, uint64_t size_of_key_datatype, uint6
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to insert into
-* data_to_insert        void*	        I	pointer to the memory position of the key to insert into the hash map
-* value_to_insert       void*           I       pointer to the memory position of the value to insert into the hash map
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to insert into
+* key_to_insert         const void*	I	pointer to the memory position of the key to insert into the hash map
+* value_to_insert       const void*	I	pointer to the memory position of the value to insert into the hash map
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void hash_map_insert(void* id_of_hash_map, void* key_to_insert, void* value_to_insert)
+bool hash_map_insert(hash_map_t* id_of_hash_map, const void* key_to_insert, const void* value_to_insert)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -269,22 +262,22 @@ void hash_map_insert(void* id_of_hash_map, void* key_to_insert, void* value_to_i
         if(NULL == id_of_hash_map)
         {
                 fprintf(stderr, "Hash map pointer location is null\n");
-                return ;
+                return false;
         }
-        if(UINT64_MAX == check_hash_map_size(id_of_hash_map))
+        if(UINT64_MAX == hash_map_size(id_of_hash_map))
         {
                 fprintf(stderr, "Hash map full, can't add more elements\n");
-                return ;
+                return false;
         }
         if(NULL == key_to_insert)
         {
                 fprintf(stderr, "Key pointer is null\n");
-                return ;
+                return false;
         }
         if(NULL == value_to_insert)
         {
                 fprintf(stderr, "Value pointer is null\n");
-                return ;
+                return false;
         }
 
 
@@ -293,11 +286,11 @@ void hash_map_insert(void* id_of_hash_map, void* key_to_insert, void* value_to_i
         new_entry = hash_map_contains_location(id_of_hash_map, key_to_insert);
         if (NULL != new_entry) 
         {
-                memcpy(new_entry->value, value_to_insert,((struct hash_map*)(id_of_hash_map))->value_datatype_size);       
-                return ; 
+                memcpy(new_entry->value, value_to_insert, id_of_hash_map->value_datatype_size);       
+                return true; 
         }
         
-        uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key_to_insert) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
+        uint64_t idx = id_of_hash_map->hash_function(key_to_insert) % id_of_hash_map->hash_map_size_allocated;
         
         
 
@@ -305,37 +298,36 @@ void hash_map_insert(void* id_of_hash_map, void* key_to_insert, void* value_to_i
         if(NULL == new_entry)
         {
                 perror("Memory allocation failed");
-                return ;
+                return false;
         }
 
 
-        new_entry->key = malloc(1*((struct hash_map*)(id_of_hash_map))->key_datatype_size);
+        new_entry->key = malloc(1*(id_of_hash_map->key_datatype_size));
         if(NULL == new_entry->key)
         {
                 perror("Memory allocation failed");
-                return ;
+                return false;
         }
-        memcpy(new_entry->key, key_to_insert,((struct hash_map*)(id_of_hash_map))->key_datatype_size);       
-        new_entry->next = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
+        memcpy(new_entry->key, key_to_insert, id_of_hash_map->key_datatype_size);       
+        new_entry->next = id_of_hash_map->hash_map_data_buckets[idx];
    
 
-        new_entry->value = malloc(1*((struct hash_map*)(id_of_hash_map))->value_datatype_size);
+        new_entry->value = malloc(1*(id_of_hash_map->value_datatype_size));
         if(NULL == new_entry->value)
         {
                 perror("Memory allocation failed");
-                return ;
+                return false;
         }
-        memcpy(new_entry->value, value_to_insert,((struct hash_map*)(id_of_hash_map))->value_datatype_size);       
-        new_entry->next = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
+        memcpy(new_entry->value, value_to_insert, id_of_hash_map->value_datatype_size);       
+        new_entry->next = id_of_hash_map->hash_map_data_buckets[idx];
+   
 
-
-
-        (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]) = new_entry;
-        ((struct hash_map*)(id_of_hash_map))->hash_map_size++;
+        id_of_hash_map->hash_map_data_buckets[idx] = new_entry;
+        id_of_hash_map->hash_map_size++;
 
         resize_hash_map(id_of_hash_map);
 
-        return ;        
+        return true;        
 }
 
 /******************************************************************
@@ -348,16 +340,16 @@ void hash_map_insert(void* id_of_hash_map, void* key_to_insert, void* value_to_i
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to erase from
-* key_to_erase          void*	        I	pointer to the memory position of the key to erase from the hash map
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to erase from
+* key_to_erase          const void*	I	pointer to the memory position of the key to erase from the hash map
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void hash_map_erase(void* id_of_hash_map, void* key_to_erase)
+bool hash_map_erase(hash_map_t* id_of_hash_map, const void* key_to_erase)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -369,40 +361,40 @@ void hash_map_erase(void* id_of_hash_map, void* key_to_erase)
         if(NULL == id_of_hash_map)
         {
                 fprintf(stderr, "Hash map pointer location is null\n");
-                return ;
+                return false;
         }
         if(NULL == key_to_erase)
         {
                 fprintf(stderr, "Key pointer is null\n");
-                return ;
+                return false;
         }
 
 
-        uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key_to_erase) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
+        uint64_t idx = id_of_hash_map->hash_function(key_to_erase) % id_of_hash_map->hash_map_size_allocated;
 
-        struct bucket *element = ((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx];
+        struct bucket *element = id_of_hash_map->hash_map_data_buckets[idx];
         struct bucket *prev = NULL;
 
         while (element) 
         {
-            if (0 == ((struct hash_map*)(id_of_hash_map))->compare_func(element->key, key_to_erase)) 
+            if (true == id_of_hash_map->compare_func(element->key, key_to_erase)) 
             {
                 if (NULL != prev) 
                         prev->next = element->next;
                 else 
-                        ((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx] = element->next;
+                        id_of_hash_map->hash_map_data_buckets[idx] = element->next;
                 
                 free(element->key);
                 free(element->value);
                 free(element);
-                ((struct hash_map*)(id_of_hash_map))->hash_map_size--;
-                return ;
+                id_of_hash_map->hash_map_size--;
+                return true;
             }
             prev = element;
             element = element->next;
         }
 
-        return ;
+        return false;
 }
 
 /******************************************************************
@@ -413,18 +405,17 @@ void hash_map_erase(void* id_of_hash_map, void* key_to_erase)
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map
-* key_to_check          void*	        I	pointer to the memory position of the key to check if exists
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------	        -------------	        ---	--------------------------
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map
+* key_to_check          const void*	        I	pointer to the memory position of the key to check if exists
 *
 *
-* RETURNS: uint8_t
-*
+* RETURNS: bool
 *
 *
 *****************************************************************/
-uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check)
+bool hash_map_contains(const hash_map_t* id_of_hash_map, const void* key_to_check)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -436,23 +427,22 @@ uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check)
         if(NULL == id_of_hash_map)
         {
                 fprintf(stderr, "Hash map pointer location is null\n");
-                return ;
+                return false;
         }
         if(NULL == key_to_check)
         {
                 fprintf(stderr, "Key pointer is null\n");
-                return ;
+                return false;
         }
 
-        uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key_to_check) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
-        struct bucket *bucket_aux = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
-        
+        uint64_t idx = id_of_hash_map->hash_function(key_to_check) % id_of_hash_map->hash_map_size_allocated;
+        struct bucket *bucket_aux = (id_of_hash_map->hash_map_data_buckets[idx]);
         while (NULL != bucket_aux) {
-            if (0 == ((struct hash_map*)(id_of_hash_map))->compare_func(bucket_aux->key, key_to_check)) 
-                return 1;
+            if (true == id_of_hash_map->compare_func(bucket_aux->key, key_to_check)) 
+                return true;
             bucket_aux = bucket_aux->next;
         }
-        return 0;
+        return false;
 }
 
 /******************************************************************
@@ -463,17 +453,17 @@ uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check)
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the stack to check
-* key                   void*	        I	pointer to the memory position of the key
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map
+* key                   const void*	        I	pointer to the memory position of the key
+* value_out             void*	                O	pointer to the memory position where the value will be copied
 *
-* RETURNS: void* (pointer to the memory position of the value that corresponds to a key)
-*
+* RETURNS: bool (true if the key exists, false otherwise)
 *
 *
 *****************************************************************/
-void* hash_map_get_value(void* id_of_hash_map, void* key)
+bool hash_map_get_value(const hash_map_t* id_of_hash_map, const void* key, void* value_out)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -485,45 +475,48 @@ void* hash_map_get_value(void* id_of_hash_map, void* key)
         if(NULL == id_of_hash_map)
         {
                 fprintf(stderr, "Hash map pointer location is null\n");
-                return ;
+                return false;
         }
         if(NULL == key)
         {
                 fprintf(stderr, "Key pointer is null\n");
-                return ;
+                return false;
         }
-        
-        uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
-        struct bucket *bucket_aux = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
+
+        uint64_t idx = id_of_hash_map->hash_function(key) % id_of_hash_map->hash_map_size_allocated;
+        struct bucket *bucket_aux = (id_of_hash_map->hash_map_data_buckets[idx]);
         
         while (NULL != bucket_aux) 
         {
-            if (0 == ((struct hash_map*)(id_of_hash_map))->compare_func(bucket_aux->key, key)) 
-                return bucket_aux->value;
+                if (true == id_of_hash_map->compare_func(bucket_aux->key, key)) 
+                {
+                        memcpy(value_out, bucket_aux->value, id_of_hash_map->value_datatype_size);
+                        return true;
+                }
             bucket_aux = bucket_aux->next;
         }
-        return NULL;
+        return false;
 }
 
 /******************************************************************
 *
-* FUNCTION NAME: check_hash_map_is_empty
+* FUNCTION NAME: hash_map_is_empty
 *
 * PURPOSE: Checks if the hash map is empty or not
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to check
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_hash_map_is_empty(void* id_of_hash_map)
+bool hash_map_is_empty(const hash_map_t* id_of_hash_map)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -533,34 +526,34 @@ uint8_t check_hash_map_is_empty(void* id_of_hash_map)
         if(NULL == id_of_hash_map)
         {
                 fprintf(stderr, "set pointer location is null\n");
-                return 0;
+                return false;
         }
-                
-        if(0 == ((struct hash_map*)id_of_hash_map)->hash_map_size)
-                return 1;
+
+        if(0 == id_of_hash_map->hash_map_size)
+                return true;
         else
-                return 0;
+                return false;
 }
 
 /******************************************************************
 *
-* FUNCTION NAME: check_hash_map_size
+* FUNCTION NAME: hash_map_size
 *
 * PURPOSE: Will return the current element count in the hash map
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to check
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------	        -------------	        ---	--------------------------
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map to check
 *
 *
-* RETURNS: uint64_t (size of the hash map)
+* RETURNS: size_t (size of the hash map)
 *
 *
 *
 *****************************************************************/
-uint64_t check_hash_map_size(void* id_of_hash_map)
+size_t hash_map_size(const hash_map_t* id_of_hash_map)
 {
         /* LOCAL VARIABLES:
         *  Variable        Type    Description
@@ -569,11 +562,11 @@ uint64_t check_hash_map_size(void* id_of_hash_map)
         */
         if(NULL == id_of_hash_map)
         {
-                fprintf(stderr, "Priority queue pointer location is null\n");
+                fprintf(stderr, "Hash map pointer location is null\n");
                 return 0;
         }
 
-        return ((struct hash_map*)id_of_hash_map)->hash_map_size;
+        return id_of_hash_map->hash_map_size;
 }
 
 /******************************************************************
@@ -586,7 +579,7 @@ uint64_t check_hash_map_size(void* id_of_hash_map)
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to free
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to free
 *
 *
 * RETURNS: void
@@ -594,7 +587,7 @@ uint64_t check_hash_map_size(void* id_of_hash_map)
 *
 *
 *****************************************************************/
-void free_hash_map(void* id_of_hash_map)
+void free_hash_map(hash_map_t* id_of_hash_map)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -606,9 +599,9 @@ void free_hash_map(void* id_of_hash_map)
         if(NULL == id_of_hash_map)
                 return;
 
-        for(int i=0;i<((struct hash_map*)id_of_hash_map)->hash_map_size_allocated;i++)
+        for(int i=0;i<id_of_hash_map->hash_map_size_allocated;i++)
         {
-                struct bucket *aux = ((struct hash_map*)id_of_hash_map)->hash_map_data_buckets[i];
+                struct bucket *aux = id_of_hash_map->hash_map_data_buckets[i];
                 while(NULL != aux)
                 {
                         struct bucket *aux_next = aux->next;
@@ -637,14 +630,14 @@ void free_hash_map(void* id_of_hash_map)
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to resize
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to resize
 *
 * RETURNS: void
 *
 *
 *
 *****************************************************************/
-void resize_hash_map(void* id_of_hash_map) 
+void resize_hash_map(hash_map_t* id_of_hash_map)
 {
         /* LOCAL VARIABLES:
         *  Variable             Type            Description
@@ -656,7 +649,7 @@ void resize_hash_map(void* id_of_hash_map)
         *  next                 struct bucket*  pointer to the next bucket to element
         *  idx                  uint64_t        index of the bucket in the new memory position to place the bucket
         */
-        if ((float)((struct hash_map*)(id_of_hash_map))->hash_map_size/((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated < LOAD_FACTOR) 
+        if ((float)(id_of_hash_map->hash_map_size)/(id_of_hash_map->hash_map_size_allocated) < LOAD_FACTOR) 
                 return ;
 
 
@@ -666,12 +659,12 @@ void resize_hash_map(void* id_of_hash_map)
         uint64_t new_size = 0;
 
         // tries to allocate double the size of the current stack;
-        if(1 == ((struct hash_map*)(id_of_hash_map))->k_aux)
+        if(1 == id_of_hash_map->k_aux)
         {
-                hash_map_bucket_aux = (struct bucket**) malloc((((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated + ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated)*(sizeof(struct bucket*)));                 
+                hash_map_bucket_aux = (struct bucket**) malloc((id_of_hash_map->hash_map_size_allocated + id_of_hash_map->hash_map_size_allocated)*(sizeof(struct bucket*)));                 
                 if(NULL != hash_map_bucket_aux)                   // this is not needed, and could be placed after the while, however the shift left is a bit faster than the addition
                 {
-                        new_size = ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated << 1;                        
+                        new_size = id_of_hash_map->hash_map_size_allocated << 1;                        
                 }
         }
         else
@@ -680,19 +673,19 @@ void resize_hash_map(void* id_of_hash_map)
                 {
                         perror("Memory reallocation failed");
                         printf("Attempting smaller reallocation\n");
-                        ((struct hash_map*)(id_of_hash_map))->k_aux<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
+                        id_of_hash_map->k_aux<<=1;                              // always times 2 (TODO: might be faster to shift at the end again, and add 1 (check the lim->))
                          
-                        if(0 == (((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated/((struct hash_map*)(id_of_hash_map))->k_aux))
+                        if(0 == (id_of_hash_map->hash_map_size_allocated/id_of_hash_map->k_aux))
                         {
                                 fprintf(stderr, "Impossible to reallocate stack\n");
                                 //perror("Impossible to reallocate stack");
                                 return ;
                         }
-           
-                        hash_map_bucket_aux = (struct bucket**) malloc((((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated + (((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated / ((struct hash_map*)(id_of_hash_map))->k_aux))*(sizeof(struct bucket*)));
+
+                        hash_map_bucket_aux = (struct bucket**) malloc((id_of_hash_map->hash_map_size_allocated + (id_of_hash_map->hash_map_size_allocated / id_of_hash_map->k_aux))*(sizeof(struct bucket*)));
                 }
 
-                new_size = ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated + (((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated/((struct hash_map*)(id_of_hash_map))->k_aux);          
+                new_size = id_of_hash_map->hash_map_size_allocated + (id_of_hash_map->hash_map_size_allocated/id_of_hash_map->k_aux);          
         }
         for(uint64_t i = 0; i < new_size; i++)
         {       
@@ -701,16 +694,16 @@ void resize_hash_map(void* id_of_hash_map)
 
 
 
-        for (uint64_t i = 0; i < ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated; i++) 
+        for (uint64_t i = 0; i < id_of_hash_map->hash_map_size_allocated; i++) 
         {
 
-                struct bucket *element = ((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[i];
+                struct bucket *element = id_of_hash_map->hash_map_data_buckets[i];
 
                 while (NULL != element) 
                 {
                     struct bucket *next = element->next;
                     
-                    uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(element->key) % new_size;
+                    uint64_t idx = id_of_hash_map->hash_function(element->key) % new_size;
 
                     element->next = hash_map_bucket_aux[idx];
                     hash_map_bucket_aux[idx] = element;
@@ -720,9 +713,9 @@ void resize_hash_map(void* id_of_hash_map)
 
 
 
-        free(((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets);
-        ((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets = hash_map_bucket_aux;
-        ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated = new_size;
+        free(id_of_hash_map->hash_map_data_buckets);
+        id_of_hash_map->hash_map_data_buckets = hash_map_bucket_aux;
+        id_of_hash_map->hash_map_size_allocated = new_size;
 
 
         return ;
@@ -738,8 +731,8 @@ void resize_hash_map(void* id_of_hash_map)
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map
-* key_to_check          void*	        I	pointer to the memory position of the key to check if exists
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map
+* key_to_check          const void*	I	pointer to the memory position of the key to check if exists
 *
 *
 * RETURNS: void* (pointer to node bucket)
@@ -747,7 +740,7 @@ void resize_hash_map(void* id_of_hash_map)
 *
 *
 *****************************************************************/
-void* hash_map_contains_location(void* id_of_hash_map,void* key_to_check)
+void* hash_map_contains_location(hash_map_t* id_of_hash_map,const void* key_to_check)
 {
         /* LOCAL VARIABLES:
         *  Variable     Type            Description
@@ -756,11 +749,11 @@ void* hash_map_contains_location(void* id_of_hash_map,void* key_to_check)
         *  bucket_aux   struct bucket*  pointer to the bucket
         *
         */
-        uint64_t idx = ((struct hash_map*)(id_of_hash_map))->hash_function(key_to_check) % ((struct hash_map*)(id_of_hash_map))->hash_map_size_allocated;
-        struct bucket *bucket_aux = (((struct hash_map*)(id_of_hash_map))->hash_map_data_buckets[idx]);
-        
+        uint64_t idx = id_of_hash_map->hash_function(key_to_check) % id_of_hash_map->hash_map_size_allocated;
+        struct bucket *bucket_aux = id_of_hash_map->hash_map_data_buckets[idx];
+
         while (NULL != bucket_aux) {
-            if (0 == ((struct hash_map*)(id_of_hash_map))->compare_func(bucket_aux->key, key_to_check)) 
+            if (true == id_of_hash_map->compare_func(bucket_aux->key, key_to_check)) 
                 return bucket_aux;
             bucket_aux = bucket_aux->next;
         }

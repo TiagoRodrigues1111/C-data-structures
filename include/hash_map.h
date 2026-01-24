@@ -10,7 +10,8 @@
 *                                                                                                       
 * Date          Author          Change Id       Release         Description Of Change                   
 * ----------    --------------- ---------       -------         -----------------------------------     
-* 09-06-2025    Tiago Rodrigues                       1         File preparation     
+* 09-06-2025    Tiago Rodrigues                       1         File preparation   
+* 18-01-2026    Tiago Rodrigues                       2         Changed functions for opaqueness  
 *
 *                                                                                                      
 *******************************************************************************************************/
@@ -36,6 +37,8 @@ extern "C" {
 /*****************************************************/
 #include <stdint.h>
 
+#include "types.h"
+
 /*****************************************************/
 
 /* 2 defines */
@@ -50,6 +53,7 @@ extern "C" {
 
 /* 4 typedefs */
 /*****************************************************/
+typedef struct hash_map hash_map_t;
 
 /*****************************************************/
 
@@ -74,19 +78,18 @@ extern "C" {
 *
 * ARGUMENT 	                TYPE	        I/O	DESCRIPTION
 * --------                      ----            ---     ------------
-* id_of_hash_map                void**	        I/O	pointer to the memory position of the hash map to implement
-* size_of_key_datatype          uint64_t        I       byte size of key datatype to place in the hash map
-* size_of_value_datatype        uint64_t        I       byte size of value datatype to place in the hash map
-* elements_to_allocate          uint64_t        I       number of elements to allocate for the hash map
+* size_of_key_datatype          size_t          I       byte size of key datatype to place in the hash map
+* size_of_value_datatype        size_t          I       byte size of value datatype to place in the hash map
+* elements_to_allocate          size_t          I       number of elements to allocate for the hash map
 * compare_func                  function        I       function to compare presence of element in the hash map
+* hash_function                 function        I       function to hash the key to place in the hash map
 *
-*
-* RETURNS: void
+* RETURNS: hash_map_t*
 *
 *
 *
 *****************************************************************/
-void create_hash_map(void** id_of_hash_map, uint64_t size_of_key_datatype, uint64_t size_of_value_datatype, uint64_t elements_to_allocate,int8_t (*compare_func)(void* val1, void* val2),uint64_t (*hash_function)(void* val));
+hash_map_t* create_hash_map(size_t size_of_key_datatype, size_t size_of_value_datatype, size_t elements_to_allocate, bool (*compare_func)(const void* val1, const void* val2), size_t (*hash_function)(const void* val));
 
 /******************************************************************
 *
@@ -98,16 +101,16 @@ void create_hash_map(void** id_of_hash_map, uint64_t size_of_key_datatype, uint6
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to insert into
-* data_to_insert        void*	        I	pointer to the memory position of the key to insert into the hash map
-* value_to_insert       void*           I       pointer to the memory position of the value to insert into the hash map
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to insert into
+* key_to_insert         const void*	I	pointer to the memory position of the key to insert into the hash map
+* value_to_insert       const void*	I	pointer to the memory position of the value to insert into the hash map
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void hash_map_insert(void* id_of_hash_map, void* key_to_insert,void* value_to_insert);
+bool hash_map_insert(hash_map_t* id_of_hash_map, const void* key_to_insert, const void* value_to_insert);
 
 /******************************************************************
 *
@@ -119,16 +122,16 @@ void hash_map_insert(void* id_of_hash_map, void* key_to_insert,void* value_to_in
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to erase from
-* key_to_erase          void*	        I	pointer to the memory position of the key to erase from the hash map
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to erase from
+* key_to_erase          const void*	I	pointer to the memory position of the key to erase from the hash map
 *
 *
-* RETURNS: void
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-void hash_map_erase(void* id_of_hash_map, void* key_to_erase);
+bool hash_map_erase(hash_map_t* id_of_hash_map, const void* key_to_erase);
 
 /******************************************************************
 *
@@ -138,18 +141,17 @@ void hash_map_erase(void* id_of_hash_map, void* key_to_erase);
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map
-* key_to_check          void*	        I	pointer to the memory position of the key to check if exists
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------	        -------------	        ---	--------------------------
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map
+* key_to_check          const void*	        I	pointer to the memory position of the key to check if exists
 *
 *
-* RETURNS: uint8_t
-*
+* RETURNS: bool
 *
 *
 *****************************************************************/
-uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check);
+bool hash_map_contains(const hash_map_t* id_of_hash_map, const void* key_to_check);
 
 /******************************************************************
 *
@@ -159,57 +161,57 @@ uint8_t hash_map_contains(void* id_of_hash_map, void* key_to_check);
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------              ----            ---     ------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the stack to check
-* key                   void*	        I	pointer to the memory position of the key
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------              ----                    ---     ------------
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map
+* key                   const void*	        I	pointer to the memory position of the key
+* value_out             void*	                O	pointer to the memory position where the value will be copied
 *
-* RETURNS: void* (pointer to the memory position of the value that corresponds to a key)
-*
+* RETURNS: bool (true if the key exists, false otherwise)
 *
 *
 *****************************************************************/
-void* hash_map_get_value(void* id_of_hash_map, void* key);
+bool hash_map_get_value(const hash_map_t* id_of_hash_map, const void* key, void* value_out);
 
 /******************************************************************
 *
-* FUNCTION NAME: check_hash_map_is_empty
+* FUNCTION NAME: hash_map_is_empty
 *
 * PURPOSE: Checks if the hash map is empty or not
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
 * --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to check
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map to check
 *
 *
-* RETURNS: uint8_t
+* RETURNS: bool
 *
 *
 *
 *****************************************************************/
-uint8_t check_hash_map_is_empty(void* id_of_hash_map);
+bool hash_map_is_empty(const hash_map_t* id_of_hash_map);
 
 /******************************************************************
 *
-* FUNCTION NAME: check_hash_map_size
+* FUNCTION NAME: hash_map_size
 *
 * PURPOSE: Will return the current element count in the hash map
 *
 * ARGUMENTS:
 *
-* ARGUMENT 	        TYPE	        I/O	DESCRIPTION
-* --------	        -------------	---	--------------------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to check
+* ARGUMENT 	        TYPE	                I/O	DESCRIPTION
+* --------	        -------------	        ---	--------------------------
+* id_of_hash_map        const hash_map_t*	I	pointer to the memory position of the hash map to check
 *
 *
-* RETURNS: uint64_t (size of the hash map)
+* RETURNS: size_t (size of the hash map)
 *
 *
 *
 *****************************************************************/
-uint64_t check_hash_map_size(void* id_of_hash_map);
+size_t hash_map_size(const hash_map_t* id_of_hash_map);
 
 /******************************************************************
 *
@@ -221,7 +223,7 @@ uint64_t check_hash_map_size(void* id_of_hash_map);
 *
 * ARGUMENT 	        TYPE	        I/O	DESCRIPTION
 * --------              ----            ---     ------------
-* id_of_hash_map        void*	        I	pointer to the memory position of the hash map to free
+* id_of_hash_map        hash_map_t*	I	pointer to the memory position of the hash map to free
 *
 *
 * RETURNS: void
@@ -229,7 +231,7 @@ uint64_t check_hash_map_size(void* id_of_hash_map);
 *
 *
 *****************************************************************/
-void free_hash_map(void* id_of_hash_map);
+void free_hash_map(hash_map_t* id_of_hash_map);
 
 
 
