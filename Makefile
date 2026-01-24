@@ -55,7 +55,14 @@ TEST_DIR    := tests
 # =========================
 # Source discovery
 # =========================
-SOURCES := $(shell find $(SRC_DIR) -name "*.c")
+# Option 1: Using shell find to exclude files ending in _ll.c
+SOURCES := $(shell find $(SRC_DIR) -name "*.c" ! -name "*_ll.c")
+
+# Option 2: If you prefer to find all and then filter in Makefile logic
+# ALL_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
+# SOURCES     := $(filter-out %_ll.c, $(ALL_SOURCES))
+
+
 OBJECTS := $(SOURCES:.c=.o)
 
 
@@ -106,7 +113,6 @@ test:
 	$(MAKE) -C $(TEST_DIR)
 
 clean:
-	# FIX: Now removes the shared lib too
 	rm -f $(OBJECTS) $(LIB_STATIC) $(SHARED_LIB)
 
 .PHONY: all install uninstall clean test
