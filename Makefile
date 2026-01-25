@@ -113,9 +113,14 @@ endif
 uninstall:
 	rm -f $(DESTDIR)$(LIBDIR)/$(LIB_STATIC)
 	rm -f $(DESTDIR)$(LIBDIR)/$(SHARED_LIB)
+
+ifeq ($(PLATFORM),windows)
 	rm -f $(DESTDIR)$(LIBDIR)/$(IMPORT_LIB)
+endif
+
 	rm -rf $(DESTDIR)$(INCLUDEDIR)/cdatastructures
 	rm -f $(DESTDIR)$(PKGCONFIGDIR)/cdatastructures.pc
+
 
 # =========================
 # Tests & cleanup
