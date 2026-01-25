@@ -1,3 +1,6 @@
+
+.DEFAULT_GOAL := all
+
 # =========================
 # Project configuration
 # =========================
@@ -9,6 +12,12 @@ UNAME_S     := $(shell uname -s)
 PLATFORM    := linux
 SHARED_EXT  := so
 
+
+
+PC_FILE := cdatastructures.pc
+
+$(PC_FILE): cdatastructures.pc.in
+	sed 's|@PREFIX@|$(PREFIX)|g' $< > $@
 
 
 
@@ -92,7 +101,9 @@ endif
 # =========================
 # Install / uninstall
 # =========================
-install: all
+install: all $(PC_FILE)
+	install -d $(DESTDIR)$(PKGCONFIGDIR)
+	install -m 644 $(PC_FILE) $(DESTDIR)$(PKGCONFIGDIR)
 	@echo "Installing libraries..."
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(LIB_STATIC) $(DESTDIR)$(LIBDIR)
