@@ -122,16 +122,15 @@ endif
 	install -m 644 cdatastructures.pc $(DESTDIR)$(PKGCONFIGDIR)
 
 uninstall:
-	rm -f $(DESTDIR)$(LIBDIR)/$(LIB_STATIC)
-	rm -f $(DESTDIR)$(LIBDIR)/$(SHARED_LIB)
+	rm -f -- $(DESTDIR)$(LIBDIR)/$(LIB_STATIC)
+	rm -f -- $(DESTDIR)$(LIBDIR)/$(SHARED_LIB)
 
 ifeq ($(PLATFORM),windows)
-	rm -f $(DESTDIR)$(LIBDIR)/$(IMPORT_LIB)
+	rm -f -- $(DESTDIR)$(LIBDIR)/$(IMPORT_LIB)
 endif
 
-	rm -rf $(DESTDIR)$(INCLUDEDIR)/cdatastructures
-	rm -f $(DESTDIR)$(PKGCONFIGDIR)/cdatastructures.pc
-
+	rm -rf -- $(DESTDIR)$(INCLUDEDIR)/cdatastructures
+	rm -f -- $(DESTDIR)$(PKGCONFIGDIR)/cdatastructures.pc
 
 # =========================
 # Tests & cleanup
@@ -140,6 +139,6 @@ test:
 	$(MAKE) -C $(TEST_DIR)
 
 clean:
-	rm -f $(OBJECTS) $(LIB_STATIC) $(SHARED_LIB) $(IMPORT_LIB)
+	rm -f -- $(OBJECTS) $(LIB_STATIC) $(SHARED_LIB) $(IMPORT_LIB)
 
 .PHONY: all install uninstall clean test
